@@ -1,0 +1,5 @@
+{
+  "name": "SIM-AGAMA: Sistem Monitoring Kegiatan Keagamaan",
+  "description": "A comprehensive web application to monitor and track student participation in religious activities, featuring student management, attendance tracking, and monthly reporting with Excel integration.",
+  "requestFramePermissions": []
+}
