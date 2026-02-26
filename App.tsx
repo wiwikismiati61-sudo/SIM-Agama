@@ -18,6 +18,8 @@ const App: React.FC = () => {
     return sessionStorage.getItem('isLoggedIn') === 'true';
   });
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   
   // App State
@@ -111,12 +113,17 @@ const App: React.FC = () => {
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar 
         currentView={currentView} 
-        onNavigate={setCurrentView} 
+        onNavigate={(view) => {
+          setCurrentView(view);
+          setIsSidebarOpen(false); // Close sidebar on navigation
+        }}
         onLogout={handleLogout} 
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
       />
       
       <main className="flex-1 flex flex-col overflow-hidden">
-        <Header viewTitle={currentView} />
+        <Header viewTitle={currentView} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
           {currentView === 'dashboard' && (
