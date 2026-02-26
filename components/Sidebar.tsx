@@ -6,9 +6,11 @@ interface SidebarProps {
   currentView: ViewType;
   onNavigate: (view: ViewType) => void;
   onLogout: () => void;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout, isOpen, setIsOpen }) => {
   const menuItems: { id: ViewType; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home' },
     { id: 'master', label: 'Master Data', icon: 'fas fa-database' },
@@ -19,14 +21,21 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout }) 
   ];
 
   return (
-    <aside className="hidden lg:flex w-64 bg-slate-900 text-white flex-col shadow-xl z-20">
-      <div className="p-6 flex items-center space-x-3 border-b border-slate-700">
-        <img src="https://iili.io/KDFk4fI.png" className="w-10 h-10 object-contain bg-white rounded-full p-1" alt="Logo" />
-        <div>
-          <h1 className="font-bold text-lg tracking-wide">SIM-AGAMA</h1>
-          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Panel Admin</p>
+    <>
+      {/* Overlay for mobile */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-10 transition-opacity lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsOpen(false)}
+      ></div>
+
+      <aside className={`fixed lg:relative inset-y-0 left-0 w-64 bg-slate-900 text-white flex flex-col shadow-xl z-20 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center space-x-3 border-b border-slate-700">
+          <img src="https://iili.io/KDFk4fI.png" className="w-10 h-10 object-contain bg-white rounded-full p-1" alt="Logo" />
+          <div>
+            <h1 className="font-bold text-lg tracking-wide">SIM-AGAMA</h1>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Panel Admin</p>
+          </div>
         </div>
-      </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">
         {menuItems.map((item) => (
@@ -55,6 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout }) 
         </button>
       </div>
     </aside>
+    </>
   );
 };
 
