@@ -20,22 +20,54 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
   const absentsToday = transactions.filter(t => t.date === today).length;
   const earlyDepartures = transactions.filter(t => t.reason === 'Pulang sebelum waktunya').length;
 
-  // Logic: Panggilan Orang Tua (Siswa > 2 hari Tidak Mengikuti Kegiatan)
-  const studentAbsenceDays: Record<string, Set<string>> = {};
+  // Logic: Panggilan Orang Tua (> 2 kali pelanggaran)
+  // Hitungan khusus: Sholat Dhuha & Dzuhur di hari yang sama dihitung 1 pelanggaran
+  const studentViolations: Record<string, { count: number, details: string[] }> = {};
+  
+  const studentTx: Record<string, Transaction[]> = {};
   transactions.forEach(t => {
-    if (!studentAbsenceDays[t.studentId]) {
-      studentAbsenceDays[t.studentId] = new Set();
-    }
-    studentAbsenceDays[t.studentId].add(t.date);
+    if (!studentTx[t.studentId]) studentTx[t.studentId] = [];
+    studentTx[t.studentId].push(t);
   });
 
-  const parentCallList = Object.keys(studentAbsenceDays)
-    .filter(id => studentAbsenceDays[id].size > 2)
+  Object.keys(studentTx).forEach(studentId => {
+    const txs = studentTx[studentId];
+    let count = 0;
+    const details: string[] = [];
+    
+    const sholatByDate: Record<string, string[]> = {};
+    
+    txs.forEach(t => {
+      const lower = t.program.toLowerCase();
+      const isSholat = lower.includes('dhuha') || lower.includes('dzuhur') || lower.includes('dhuhur');
+      
+      if (isSholat) {
+        if (!sholatByDate[t.date]) sholatByDate[t.date] = [];
+        if (!sholatByDate[t.date].includes(t.program)) {
+          sholatByDate[t.date].push(t.program);
+        }
+      } else {
+        count++;
+        details.push(`${t.program} (${new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })})`);
+      }
+    });
+    
+    Object.keys(sholatByDate).forEach(date => {
+      count++;
+      const progs = sholatByDate[date].join(' & ');
+      details.push(`${progs} (${new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })})`);
+    });
+    
+    studentViolations[studentId] = { count, details };
+  });
+
+  const parentCallList = Object.keys(studentViolations)
+    .filter(id => studentViolations[id].count > 2)
     .map(id => {
       const student = students.find(s => String(s.id) === String(id));
-      return student ? { ...student, count: studentAbsenceDays[id].size, dates: Array.from(studentAbsenceDays[id]).sort() } : null;
+      return student ? { ...student, count: studentViolations[id].count, details: studentViolations[id].details } : null;
     })
-    .filter((item): item is (Student & { count: number, dates: string[] }) => item !== null);
+    .filter((item): item is (Student & { count: number, details: string[] }) => item !== null);
 
   const stats = [
     { label: 'Total Siswa Terdata', value: totalStudents, icon: 'fas fa-users', color: 'brand' },
@@ -195,7 +227,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
             </div>
             <div>
               <h3 className="font-bold text-slate-800 text-base tracking-tight">Daftar Panggilan Orang Tua</h3>
-              <p className="text-sm text-slate-500 mt-0.5">Siswa dengan &gt; 2 hari tidak mengikuti kegiatan</p>
+              <p className="text-sm text-slate-500 mt-0.5">Siswa dengan &gt; 2x pelanggaran kegiatan</p>
             </div>
           </div>
           <span className="bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perhatian Khusus</span>
@@ -208,8 +240,8 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
                 <tr>
                   <th className="px-6 py-4">Nama Siswa</th>
                   <th className="px-6 py-4">Kelas</th>
-                  <th className="px-6 py-4">Tanggal Absen</th>
-                  <th className="px-6 py-4 text-center">Total Hari</th>
+                  <th className="px-6 py-4">Detail Pelanggaran</th>
+                  <th className="px-6 py-4 text-center">Total Pelanggaran</th>
                   <th className="px-6 py-4 text-center">Status</th>
                 </tr>
               </thead>
@@ -220,14 +252,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
                     <td className="px-6 py-4 text-slate-500">{s.class}</td>
                     <td className="px-6 py-4 text-slate-500 text-xs">
                       <ul className="list-disc list-inside space-y-1">
-                        {s.dates.map(d => (
-                          <li key={d}>{new Date(d).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</li>
+                        {s.details.map((detail, i) => (
+                          <li key={i}>{detail}</li>
                         ))}
                       </ul>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-bold text-sm">
-                        {s.count} Hari
+                        {s.count} Kali
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
