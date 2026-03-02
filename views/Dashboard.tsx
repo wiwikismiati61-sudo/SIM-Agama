@@ -101,6 +101,20 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
     jumlah: programCounts[key]
   })).sort((a, b) => b.jumlah - a.jumlah).slice(0, 5); // Top 5
 
+  const classCounts: Record<string, number> = {};
+  transactions.forEach(t => {
+    const student = students.find(s => String(s.id) === String(t.studentId));
+    if (student) {
+      if (!classCounts[student.class]) classCounts[student.class] = 0;
+      classCounts[student.class]++;
+    }
+  });
+
+  const classData = Object.keys(classCounts).map(key => ({
+    name: key,
+    jumlah: classCounts[key]
+  })).sort((a, b) => b.jumlah - a.jumlah).slice(0, 10); // Top 10 classes
+
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
       {/* Stats Cards */}
@@ -121,14 +135,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
       </div>
 
       {/* Charts Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex flex-col gap-6">
         {/* Pie Chart: Ketercapaian Hari Ini */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
           <div className="mb-4">
             <h3 className="font-bold text-slate-800 text-lg tracking-tight">Ketercapaian Kegiatan Hari Ini</h3>
             <p className="text-sm text-slate-500 mt-0.5">Persentase siswa yang mengikuti kegiatan keagamaan</p>
           </div>
-          <div className="flex-1 min-h-[300px] w-full relative">
+          <div className="h-[320px] w-full relative mt-4">
             {totalStudents > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -175,7 +189,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
             <h3 className="font-bold text-slate-800 text-lg tracking-tight">Ketidakikutsertaan Terbanyak</h3>
             <p className="text-sm text-slate-500 mt-0.5">Berdasarkan jenis kegiatan keagamaan (Total)</p>
           </div>
-          <div className="flex-1 min-h-[300px] w-full">
+          <div className="h-[320px] w-full mt-4">
             {programData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -205,6 +219,53 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
                   <Bar dataKey="jumlah" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={40}>
                     {programData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={index === 0 ? '#f43f5e' : '#818cf8'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-slate-400 text-sm font-medium">
+                Belum ada data ketidakhadiran
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bar Chart: Ketidakikutsertaan per Kelas */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+          <div className="mb-4">
+            <h3 className="font-bold text-slate-800 text-lg tracking-tight">Ketidakikutsertaan per Kelas</h3>
+            <p className="text-sm text-slate-500 mt-0.5">Berdasarkan kelas (Total)</p>
+          </div>
+          <div className="h-[320px] w-full mt-4">
+            {classData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={classData}
+                  margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#f8fafc' }}
+                    formatter={(value: number) => [value, 'Jumlah Pelanggaran']}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
+                  />
+                  <Bar dataKey="jumlah" fill="#10b981" radius={[6, 6, 0, 0]} barSize={40}>
+                    {classData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#059669' : '#34d399'} />
                     ))}
                   </Bar>
                 </BarChart>
