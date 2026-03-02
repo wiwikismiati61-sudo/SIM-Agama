@@ -92,38 +92,38 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
       
       {/* Program Management */}
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Program Keagamaan</h3>
-            <p className="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Jadwal kegiatan rutin sekolah</p>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Program Keagamaan</h3>
+            <p className="text-sm text-slate-500 font-medium mt-1">Jadwal kegiatan rutin sekolah</p>
           </div>
           <button 
             onClick={() => { setModalType('program'); setFormData({ name: '', val: '' }); }}
-            className="w-full md:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
+            className="w-full md:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center"
           >
             <i className="fas fa-plus mr-2"></i>Tambah Program
           </button>
         </div>
         
-        <div className="overflow-x-auto rounded-xl border border-gray-50">
-          <table className="w-full text-sm text-left">
-            <thead className="text-[10px] text-indigo-600 uppercase font-black bg-indigo-50/50">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="w-full text-sm text-left text-slate-600">
+            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4">Nama Kegiatan</th>
                 <th className="px-6 py-4">Waktu Pelaksanaan</th>
                 <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100">
               {programs.map(p => (
-                <tr key={p.id} className="hover:bg-indigo-50/20 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-700">{p.name}</td>
+                <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4 font-semibold text-slate-800">{p.name}</td>
                   <td className="px-6 py-4">
-                    <span className="text-xs font-black text-indigo-500 bg-white border border-indigo-100 px-3 py-1 rounded-full">{p.time}</span>
+                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{p.time}</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => setDeleteTarget({ type: 'program', id: p.id, name: p.name })} className="w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all">
+                    <button onClick={() => setDeleteTarget({ type: 'program', id: p.id, name: p.name })} className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
                       <i className="fas fa-trash"></i>
                     </button>
                   </td>
@@ -135,91 +135,99 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
       </div>
 
       {/* Student Management */}
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Data Siswa</h3>
-            <p className="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Basis data siswa terintegrasi</p>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Data Siswa</h3>
+            <p className="text-sm text-slate-500 font-medium mt-1">Basis data siswa terintegrasi</p>
           </div>
           <div className="flex flex-wrap gap-3 w-full md:w-auto">
-            <label className="flex-1 md:flex-none cursor-pointer bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all text-center shadow-md active:scale-95">
+            <label className="flex-1 md:flex-none cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all text-center shadow-lg shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center">
               <i className="fas fa-file-excel mr-2"></i>Upload Excel
               <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleExcelUpload} />
             </label>
             <button 
               onClick={() => { setModalType('student'); setFormData({ name: '', val: '' }); }}
-              className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
+              className="flex-1 md:flex-none bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center"
             >
               <i className="fas fa-user-plus mr-2"></i>Tambah Manual
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto max-h-[500px] rounded-xl border border-gray-50 scrollbar-thin scrollbar-thumb-gray-200">
-          <table className="w-full text-sm text-left">
-            <thead className="text-[10px] text-blue-600 uppercase font-black bg-blue-50/50 sticky top-0 z-10">
+        <div className="overflow-x-auto max-h-[500px] rounded-2xl border border-slate-200 scrollbar-thin scrollbar-thumb-slate-200">
+          <table className="w-full text-sm text-left text-slate-600">
+            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-4">Nama Siswa</th>
                 <th className="px-6 py-4">Kelas</th>
                 <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100">
               {students.length > 0 ? students.map(s => (
-                <tr key={s.id} className="hover:bg-blue-50/20 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-700">{s.name}</td>
+                <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4 font-semibold text-slate-800">{s.name}</td>
                   <td className="px-6 py-4">
-                    <span className="text-[10px] font-black bg-gray-100 text-gray-500 px-3 py-1 rounded-md border border-gray-200 uppercase">{s.class}</span>
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{s.class}</span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all">
+                    <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
                       <i className="fas fa-trash"></i>
                     </button>
                   </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={3} className="px-6 py-20 text-center text-gray-400 italic">Belum ada data siswa. Silakan upload file excel atau tambah manual.</td>
+                  <td colSpan={3} className="px-6 py-16 text-center text-slate-400 font-medium">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <i className="far fa-user text-4xl text-slate-300"></i>
+                      <p>Belum ada data siswa. Silakan upload file excel atau tambah manual.</p>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <p className="text-[10px] text-gray-400 mt-4 font-bold uppercase tracking-widest italic">*Format Excel: Kolom A = Nama, Kolom B = Kelas (Header di baris 1)</p>
+        <p className="text-xs text-slate-400 mt-4 font-medium italic">*Format Excel: Kolom A = Nama, Kolom B = Kelas (Header di baris 1)</p>
       </div>
 
       {/* Add/Edit Modal Overlay */}
       {modalType && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight mb-6">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-6 flex items-center">
+              <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
+                <i className={`fas ${modalType === 'program' ? 'fa-calendar-plus' : 'fa-user-plus'}`}></i>
+              </div>
               Tambah {modalType === 'program' ? 'Program' : 'Siswa'}
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Nama {modalType === 'program' ? 'Kegiatan' : 'Siswa'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nama {modalType === 'program' ? 'Kegiatan' : 'Siswa'}</label>
                 <input 
                   type="text" 
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full border border-gray-200 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold"
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all"
                   placeholder={`Masukkan nama ${modalType === 'program' ? 'kegiatan' : 'siswa'}...`}
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{modalType === 'program' ? 'Waktu (contoh: 07:00)' : 'Kelas'}</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{modalType === 'program' ? 'Waktu (contoh: 07:00)' : 'Kelas'}</label>
                 <input 
                   type="text" 
                   value={formData.val}
                   onChange={(e) => setFormData({ ...formData, val: e.target.value })}
-                  className="w-full border border-gray-200 px-4 py-3 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold"
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all"
                   placeholder={`Masukkan ${modalType === 'program' ? 'waktu' : 'kelas'}...`}
                 />
               </div>
             </div>
             <div className="mt-8 flex gap-3">
-              <button onClick={() => setModalType(null)} className="flex-1 px-6 py-3 border-2 border-gray-100 rounded-xl text-gray-400 font-black uppercase tracking-widest hover:bg-gray-50 transition-all">Batal</button>
-              <button onClick={saveForm} className="flex-1 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest shadow-lg shadow-indigo-200 transition-all active:scale-95">Simpan</button>
+              <button onClick={() => setModalType(null)} className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+              <button onClick={saveForm} className="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98]">Simpan</button>
             </div>
           </div>
         </div>
@@ -227,27 +235,27 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
 
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center">
-            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
               <i className="fas fa-trash-alt"></i>
             </div>
-            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Hapus Data?</h3>
-            <p className="text-gray-500 text-sm font-medium mb-8">
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Data?</h3>
+            <p className="text-slate-500 text-sm font-medium mb-8">
               Anda akan menghapus data {deleteTarget.type === 'program' ? 'program' : 'siswa'}: <br />
-              <strong className="font-bold text-gray-700">"{deleteTarget.name}"</strong>.
+              <strong className="font-bold text-slate-700">"{deleteTarget.name}"</strong>.
               <br />Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex flex-col gap-3">
               <button 
                 onClick={handleConfirmDelete}
-                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-red-200 active:scale-95"
+                className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
               >
                 Ya, Hapus
               </button>
               <button 
                 onClick={() => setDeleteTarget(null)}
-                className="w-full py-4 border-2 border-gray-100 hover:bg-gray-50 text-gray-400 rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
+                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
               >
                 Batalkan
               </button>

@@ -117,31 +117,31 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Jadwal Kegiatan Agama Mingguan</h3>
-            <p className="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Pengaturan jadwal rutin pembiasaan keagamaan</p>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Jadwal Kegiatan Agama Mingguan</h3>
+            <p className="text-sm text-slate-500 font-medium mt-1">Pengaturan jadwal rutin pembiasaan keagamaan</p>
           </div>
           <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <button 
                 onClick={downloadScheduleExcel}
-                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center justify-center"
+                className="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center"
             >
-                <i className="fas fa-download mr-2"></i>Download Excel
+                <i className="fas fa-file-excel mr-2"></i>Export Excel
             </button>
             <button 
                 onClick={openModalForAdd}
-                className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center justify-center"
+                className="w-full md:w-auto bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center"
             >
                 <i className="fas fa-plus mr-2"></i>Tambah Jadwal
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-gray-100">
-          <table className="w-full text-sm text-left">
-            <thead className="text-[10px] text-gray-400 uppercase font-black bg-gray-50/50">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="w-full text-sm text-left text-slate-600">
+            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4">Kegiatan</th>
                 <th className="px-6 py-4">Waktu Pelaksanaan</th>
@@ -150,34 +150,39 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100">
               {schedules.length > 0 ? schedules.map(s => (
-                <tr key={s.id} className="hover:bg-green-50/20 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-800">{s.activity}</td>
+                <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4 font-semibold text-slate-800">{s.activity}</td>
                   <td className="px-6 py-4">
-                    <div className="font-bold text-gray-700">{s.day}</div>
-                    <div className="text-[10px] text-green-600 font-black tracking-widest">{s.week}</div>
+                    <div className="font-semibold text-slate-700">{s.day}</div>
+                    <div className="text-xs text-brand-600 font-bold mt-0.5">{s.week}</div>
                     {s.month && s.month !== 'Setiap Bulan' && (
-                        <div className="text-[10px] text-purple-600 font-black tracking-widest mt-1">{s.month}</div>
+                        <div className="text-xs text-indigo-600 font-bold mt-0.5">{s.month}</div>
                     )}
-                    <div className="text-[10px] text-gray-500 font-black tracking-widest mt-1">{s.year}</div>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">{s.year}</div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-[10px] font-black text-gray-500 bg-gray-100 border border-gray-200 px-3 py-1 rounded-md uppercase">{s.class}</span>
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{s.class}</span>
                   </td>
-                  <td className="px-6 py-4 text-xs italic text-gray-500">{s.notes || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-slate-500">{s.notes || '-'}</td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
-                    <button onClick={() => openModalForEdit(s)} className="w-8 h-8 rounded-lg text-blue-400 hover:text-blue-600 hover:bg-blue-50 mr-2">
+                    <button onClick={() => openModalForEdit(s)} className="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 mr-2 transition-colors">
                       <i className="fas fa-edit"></i>
                     </button>
-                    <button onClick={() => setDeleteTarget(s)} className="w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50">
+                    <button onClick={() => setDeleteTarget(s)} className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
                       <i className="fas fa-trash"></i>
                     </button>
                   </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center text-gray-400 italic">Belum ada jadwal yang dibuat.</td>
+                  <td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-medium">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <i className="far fa-calendar-alt text-4xl text-slate-300"></i>
+                      <p>Belum ada jadwal yang dibuat.</p>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -187,19 +192,22 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
       
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight mb-8">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-6 flex items-center">
+              <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
+                <i className="fas fa-calendar-alt"></i>
+              </div>
               {editingSchedule ? 'Edit Jadwal Kegiatan' : 'Tambah Jadwal Kegiatan Baru'}
             </h3>
-            <div className="space-y-4">
+            <div className="space-y-5">
                 <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Kegiatan</label>
-                    <div className="flex gap-4">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kegiatan</label>
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <select 
                             value={formData.activity} 
                             onChange={(e) => setFormData({...formData, activity: e.target.value})}
-                            className="flex-1 w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none"
+                            className="flex-1 w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
                         >
                             <option value="">-- Pilih Kegiatan --</option>
                             {ACTIVITIES.map(a => <option key={a} value={a}>{a}</option>)}
@@ -211,56 +219,56 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
                                 placeholder="Tulis nama kegiatan"
                                 value={otherActivity}
                                 onChange={(e) => setOtherActivity(e.target.value)}
-                                className="flex-1 w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                className="flex-1 w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                             />
                         )}
                     </div>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                      <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Hari</label>
-                        <select value={formData.day} onChange={(e) => setFormData({...formData, day: e.target.value})} className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hari</label>
+                        <select value={formData.day} onChange={(e) => setFormData({...formData, day: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Hari --</option>
                             {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Minggu Ke</label>
-                        <select value={formData.week} onChange={(e) => setFormData({...formData, week: e.target.value})} className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Minggu Ke</label>
+                        <select value={formData.week} onChange={(e) => setFormData({...formData, week: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Minggu --</option>
                             {WEEKS.map(w => <option key={w} value={w}>{w}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Bulan</label>
-                        <select value={formData.month} onChange={(e) => setFormData({...formData, month: e.target.value})} className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bulan</label>
+                        <select value={formData.month} onChange={(e) => setFormData({...formData, month: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Bulan --</option>
                             {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tahun</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tahun</label>
                         <input 
                             type="number"
                             placeholder="YYYY"
                             value={formData.year} 
                             onChange={(e) => setFormData({...formData, year: e.target.value})} 
-                            className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none"
+                            className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                         />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Kelas (cth: 7A, 8B, atau Semua Kelas)</label>
-                    <input type="text" value={formData.class} onChange={(e) => setFormData({...formData, class: e.target.value})} className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none" />
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelas (cth: 7A, 8B, atau Semua Kelas)</label>
+                    <input type="text" value={formData.class} onChange={(e) => setFormData({...formData, class: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all" placeholder="Masukkan kelas..." />
                 </div>
                 <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Keterangan (Opsional)</label>
-                    <textarea value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-green-500 focus:outline-none" rows={2}></textarea>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan (Opsional)</label>
+                    <textarea value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all resize-none" rows={2} placeholder="Tambahkan keterangan..."></textarea>
                 </div>
             </div>
-            <div className="mt-10 flex gap-4">
-              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-8 py-4 border-2 border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all">Batal</button>
-              <button onClick={handleSave} className="flex-1 px-8 py-4 bg-green-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-green-200 hover:bg-green-700 transition-all active:scale-95">Simpan Jadwal</button>
+            <div className="mt-8 flex gap-3">
+              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+              <button onClick={handleSave} className="flex-1 px-4 py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Jadwal</button>
             </div>
           </div>
         </div>
@@ -268,25 +276,25 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
 
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center">
-            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
                 <i className="fas fa-trash-alt"></i>
             </div>
-            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Hapus Jadwal?</h3>
-            <p className="text-gray-500 text-sm font-medium mb-8">
-                Anda akan menghapus jadwal <strong className="font-bold text-gray-700">"{deleteTarget.activity}"</strong>. Tindakan ini tidak dapat dibatalkan.
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Jadwal?</h3>
+            <p className="text-slate-500 text-sm font-medium mb-8">
+                Anda akan menghapus jadwal <strong className="font-bold text-slate-700">"{deleteTarget.activity}"</strong>. Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex flex-col gap-3">
                 <button 
                 onClick={handleDelete}
-                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-red-200 active:scale-95"
+                className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
                 >
                 Ya, Hapus
                 </button>
                 <button 
                 onClick={() => setDeleteTarget(null)}
-                className="w-full py-4 border-2 border-gray-100 hover:bg-gray-50 text-gray-400 rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
+                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
                 >
                 Batalkan
                 </button>

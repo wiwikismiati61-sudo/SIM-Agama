@@ -53,46 +53,46 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-6">
           <div>
-            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Laporan Absensi Bulanan</h3>
-            <p className="text-xs text-gray-400 font-bold mt-1 uppercase tracking-widest">Arsip lengkap data ketidakhadiran siswa</p>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Laporan Absensi Bulanan</h3>
+            <p className="text-sm text-slate-500 font-medium mt-1">Arsip lengkap data ketidakhadiran siswa</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Pilih Kelas</label>
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Pilih Kelas</label>
               <select 
                 value={filterClass}
                 onChange={(e) => setFilterClass(e.target.value)}
-                className="w-full border-2 border-gray-100 px-4 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold"
+                className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer"
               >
                 <option value="all">Semua Kelas</option>
                 {classes.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-2">Pilih Bulan</label>
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Pilih Bulan</label>
               <input 
                 type="month" 
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="w-full border-2 border-gray-100 px-4 py-2 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold" 
+                className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all" 
               />
             </div>
             <button 
               onClick={downloadExcel}
-              className="mt-auto h-11 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-green-200 flex items-center"
+              className="mt-auto h-[46px] bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center active:scale-[0.98]"
             >
-              <i className="fas fa-download mr-2"></i>Download Excel
+              <i className="fas fa-file-excel mr-2"></i>Export Excel
             </button>
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-gray-100">
-          <table className="w-full text-sm text-left" id="reportTable">
-            <thead className="text-[10px] text-gray-400 uppercase font-black bg-gray-50/50">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <table className="w-full text-sm text-left text-slate-600" id="reportTable">
+            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4">Waktu</th>
                 <th className="px-6 py-4">Siswa</th>
@@ -102,34 +102,34 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                 <th className="px-6 py-4 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-100">
               {filtered.length > 0 ? filtered.map(t => (
-                <tr key={t.id} className="hover:bg-blue-50/20 transition-colors">
+                <tr key={t.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <div className="text-gray-800 font-bold">{t.date}</div>
-                    <div className="text-[10px] text-gray-400 font-black tracking-widest">{t.time}</div>
+                    <div className="text-slate-800 font-semibold">{t.date}</div>
+                    <div className="text-xs text-slate-500 font-medium mt-0.5">{t.time}</div>
                   </td>
-                  <td className="px-6 py-4 font-bold text-gray-700">{t.studentName}</td>
+                  <td className="px-6 py-4 font-semibold text-slate-700">{t.studentName}</td>
                   <td className="px-6 py-4">
-                    <span className="text-[10px] font-black text-gray-400 bg-gray-100 border border-gray-200 px-3 py-1 rounded-md uppercase">{t.class}</span>
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{t.class}</span>
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-600 italic">{t.program}</td>
+                  <td className="px-6 py-4 font-medium text-slate-600">{t.program}</td>
                   <td className="px-6 py-4">
-                    <span className="bg-blue-50 text-blue-600 text-[10px] font-black px-3 py-1.5 rounded-full border border-blue-100 uppercase tracking-tight">
+                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-brand-50 text-brand-700 font-semibold text-xs border border-brand-100">
                       {t.reason}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center whitespace-nowrap">
                     <button 
                       onClick={() => startEdit(t)} 
-                      className="w-8 h-8 rounded-lg text-blue-400 hover:text-blue-600 hover:bg-blue-50 mr-2 transition-colors"
+                      className="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 mr-2 transition-colors"
                       title="Edit Data"
                     >
                       <i className="fas fa-edit"></i>
                     </button>
                     <button 
                       onClick={() => setDeleteConfirmId(t.id)} 
-                      className="w-8 h-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                       title="Hapus Data"
                     >
                       <i className="fas fa-trash"></i>
@@ -138,7 +138,12 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center text-gray-400 italic font-medium">Tidak ada data untuk periode ini.</td>
+                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400 font-medium">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <i className="far fa-folder-open text-4xl text-slate-300"></i>
+                      <p>Tidak ada data untuk periode ini.</p>
+                    </div>
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -148,64 +153,67 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
 
       {/* Edit Modal Overlay */}
       {editingId && editData && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight flex items-center">
-                <i className="fas fa-edit mr-3 text-blue-600"></i>Edit Data Absensi
+              <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
+                  <i className="fas fa-edit"></i>
+                </div>
+                Edit Data Absensi
               </h3>
-              <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-600">
-                <i className="fas fa-times text-xl"></i>
+              <button onClick={() => setEditingId(null)} className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
+                <i className="fas fa-times text-lg"></i>
               </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Tanggal</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal</label>
                   <input 
                     type="date"
                     value={editData.date}
                     onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-                    className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Jam</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Jam</label>
                   <input 
                     type="time"
                     value={editData.time}
                     onChange={(e) => setEditData({ ...editData, time: e.target.value })}
-                    className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Siswa</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Siswa</label>
                 <input 
                   type="text" 
                   value={`${editData.studentName} (${editData.class})`}
                   disabled
-                  className="w-full bg-gray-50 border-2 border-gray-50 px-4 py-3 rounded-2xl font-bold text-gray-400"
+                  className="w-full bg-slate-100 border border-slate-200 px-4 py-3 rounded-xl font-semibold text-slate-400 cursor-not-allowed"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Alasan</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alasan</label>
                 <select 
                   value={editData.reason}
                   onChange={(e) => setEditData({ ...editData, reason: e.target.value })}
-                  className="w-full border-2 border-gray-100 px-4 py-3 rounded-2xl font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
                 >
                   {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
             </div>
 
-            <div className="mt-10 flex gap-4">
-              <button onClick={() => setEditingId(null)} className="flex-1 px-8 py-4 border-2 border-gray-100 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-gray-50 transition-all">Batal</button>
-              <button onClick={handleUpdate} className="flex-1 px-8 py-4 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95">Simpan Perubahan</button>
+            <div className="mt-8 flex gap-3">
+              <button onClick={() => setEditingId(null)} className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+              <button onClick={handleUpdate} className="flex-1 px-4 py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Perubahan</button>
             </div>
           </div>
         </div>
@@ -213,25 +221,25 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] p-10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center">
-            <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-inner">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
               <i className="fas fa-trash-alt"></i>
             </div>
-            <h3 className="text-2xl font-black text-gray-800 uppercase tracking-tight mb-2">Hapus Data?</h3>
-            <p className="text-gray-500 text-sm font-medium mb-8">
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Data?</h3>
+            <p className="text-slate-500 text-sm font-medium mb-8">
               Apakah Anda benar-benar ingin menghapus data absensi ini? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex flex-col gap-3">
               <button 
                 onClick={() => confirmDelete(deleteConfirmId)} 
-                className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-red-200 active:scale-95"
+                className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
               >
                 Ya, Hapus Sekarang
               </button>
               <button 
                 onClick={() => setDeleteConfirmId(null)} 
-                className="w-full py-4 border-2 border-gray-100 hover:bg-gray-50 text-gray-400 rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
+                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
               >
                 Tidak, Batalkan
               </button>

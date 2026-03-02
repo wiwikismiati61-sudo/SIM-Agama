@@ -110,7 +110,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
       <Sidebar 
         currentView={currentView} 
         onNavigate={(view) => {
@@ -122,52 +122,54 @@ const App: React.FC = () => {
         setIsOpen={setIsSidebarOpen}
       />
       
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden relative">
         <Header viewTitle={currentView} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          {currentView === 'dashboard' && (
-            <DashboardView 
-              students={students} 
-              transactions={transactions} 
-            />
-          )}
-          {currentView === 'master' && (
-            <MasterView 
-              students={students} 
-              setStudents={setStudents} 
-              programs={programs} 
-              setPrograms={setPrograms} 
-            />
-          )}
-          {currentView === 'transaksi' && (
-            <TransactionView 
-              students={students} 
-              programs={programs} 
-              onAddTransaction={(t) => setTransactions([t, ...transactions])} 
-            />
-          )}
-          {currentView === 'laporan' && (
-            <ReportView 
-              students={students} 
-              transactions={transactions} 
-              onDeleteTransaction={(id) => setTransactions(transactions.filter(t => t.id !== id))}
-              onUpdateTransaction={(updated) => setTransactions(transactions.map(t => t.id === updated.id ? updated : t))}
-            />
-          )}
-          {currentView === 'jadwal' && (
-            <ScheduleView 
-              schedules={schedules}
-              setSchedules={setSchedules}
-            />
-          )}
-          {currentView === 'pengaturan' && (
-            <SettingsView 
-              onUpdateAuth={updateAuth} 
-              onRestore={restoreData}
-              data={{ students, programs, transactions, schedules, auth }}
-            />
-          )}
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 lg:px-12">
+          <div className="max-w-7xl mx-auto">
+            {currentView === 'dashboard' && (
+              <DashboardView 
+                students={students} 
+                transactions={transactions} 
+              />
+            )}
+            {currentView === 'master' && (
+              <MasterView 
+                students={students} 
+                setStudents={setStudents} 
+                programs={programs} 
+                setPrograms={setPrograms} 
+              />
+            )}
+            {currentView === 'transaksi' && (
+              <TransactionView 
+                students={students} 
+                programs={programs} 
+                onAddTransaction={(t) => setTransactions([t, ...transactions])} 
+              />
+            )}
+            {currentView === 'laporan' && (
+              <ReportView 
+                students={students} 
+                transactions={transactions} 
+                onDeleteTransaction={(id) => setTransactions(transactions.filter(t => t.id !== id))}
+                onUpdateTransaction={(updated) => setTransactions(transactions.map(t => t.id === updated.id ? updated : t))}
+              />
+            )}
+            {currentView === 'jadwal' && (
+              <ScheduleView 
+                schedules={schedules}
+                setSchedules={setSchedules}
+              />
+            )}
+            {currentView === 'pengaturan' && (
+              <SettingsView 
+                onUpdateAuth={updateAuth} 
+                onRestore={restoreData}
+                data={{ students, programs, transactions, schedules, auth }}
+              />
+            )}
+          </div>
         </div>
       </main>
     </div>
