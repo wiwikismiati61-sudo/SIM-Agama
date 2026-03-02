@@ -8,9 +8,10 @@ interface ReportProps {
   transactions: Transaction[];
   onDeleteTransaction: (id: string) => void;
   onUpdateTransaction: (updated: Transaction) => void;
+  onDeleteMultipleTransactions?: (ids: string[]) => void;
 }
 
-const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTransaction, onUpdateTransaction }) => {
+const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTransaction, onUpdateTransaction, onDeleteMultipleTransactions }) => {
   const [filterClass, setFilterClass] = useState('all');
   const [filterType, setFilterType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [filterDate, setFilterDate] = useState(() => {
@@ -42,6 +43,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
     const month = String(d.getMonth() + 1).padStart(2, '0');
     return `${year}-${month}`;
   });
+  const [showDoubleOnly, setShowDoubleOnly] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Transaction | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -62,7 +64,24 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
   const uniquePrograms = Array.from<string>(new Set(transactions.map(t => t.program))).sort();
   const uniqueReasons = Array.from<string>(new Set(transactions.map(t => t.reason))).sort();
 
+  const duplicateKeys = new Set<string>();
+  const seenKeys = new Set<string>();
+  
+  transactions.forEach(t => {
+    const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
+    if (seenKeys.has(key)) {
+      duplicateKeys.add(key);
+    } else {
+      seenKeys.add(key);
+    }
+  });
+
   const filtered = transactions.filter(t => {
+    if (showDoubleOnly) {
+      const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
+      if (!duplicateKeys.has(key)) return false;
+    }
+
     const classMatch = filterClass === 'all' || t.class === filterClass;
     let dateMatch = false;
     if (filterType === 'daily') {
@@ -110,6 +129,33 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
   const confirmDelete = (id: string) => {
     onDeleteTransaction(id);
     setDeleteConfirmId(null);
+  };
+
+  const handleCleanDuplicates = () => {
+    const seen = new Set<string>();
+    const idsToDelete: string[] = [];
+    
+    // Iterate from oldest to newest if we want to keep the first one.
+    // Assuming transactions are sorted newest first, we can iterate backwards or just keep the first one we see (newest).
+    // Let's keep the first one we see in the array (newest).
+    transactions.forEach(t => {
+      const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
+      if (seen.has(key)) {
+        idsToDelete.push(t.id);
+      } else {
+        seen.add(key);
+      }
+    });
+
+    if (idsToDelete.length > 0) {
+      if (window.confirm(`Ditemukan ${idsToDelete.length} data ganda. Apakah Anda yakin ingin menghapus data ganda tersebut dan menyisakan satu data saja?`)) {
+        if (onDeleteMultipleTransactions) {
+           onDeleteMultipleTransactions(idsToDelete);
+        }
+      }
+    } else {
+      alert('Tidak ada data ganda yang ditemukan.');
+    }
   };
 
   return (
@@ -179,12 +225,29 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                 />
               )}
             </div>
-            <button 
-              onClick={downloadExcel}
-              className="mt-auto h-[46px] bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center active:scale-[0.98]"
-            >
-              <i className="fas fa-file-excel mr-2"></i>Export Excel
-            </button>
+            <div className="flex gap-2 mt-auto">
+              <button 
+                onClick={() => setShowDoubleOnly(!showDoubleOnly)}
+                className={`h-[46px] px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center active:scale-[0.98] border ${showDoubleOnly ? 'bg-amber-100 text-amber-700 border-amber-300 shadow-inner' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                title="Tampilkan hanya data yang memiliki duplikat pada hari yang sama"
+              >
+                <i className={`fas fa-copy mr-2 ${showDoubleOnly ? 'text-amber-600' : 'text-slate-400'}`}></i>
+                Data Ganda
+              </button>
+              <button 
+                onClick={handleCleanDuplicates}
+                className="h-[46px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center active:scale-[0.98]"
+                title="Hapus data ganda dan sisakan satu data saja"
+              >
+                <i className="fas fa-broom mr-2"></i>Bersihkan Ganda
+              </button>
+              <button 
+                onClick={downloadExcel}
+                className="h-[46px] bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center active:scale-[0.98]"
+              >
+                <i className="fas fa-file-excel mr-2"></i>Export Excel
+              </button>
+            </div>
           </div>
         </div>
 
@@ -273,15 +336,26 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filtered.length > 0 ? filtered.map(t => (
-                <tr key={t.id} className="hover:bg-slate-50/50 transition-colors group">
+              {filtered.length > 0 ? filtered.map(t => {
+                const isDuplicate = duplicateKeys.has(`${t.studentId}-${t.date}-${t.time}-${t.program}`);
+                return (
+                <tr key={t.id} className={`hover:bg-slate-50/50 transition-colors group ${isDuplicate && showDoubleOnly ? 'bg-amber-50/30' : ''}`}>
                   <td className="px-6 py-4">
                     <div className="text-slate-800 font-semibold">
                       {new Date(t.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
                     <div className="text-xs text-slate-500 font-medium mt-0.5">{t.time}</div>
                   </td>
-                  <td className="px-6 py-4 font-semibold text-slate-700">{t.studentName}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-700">{t.studentName}</span>
+                      {isDuplicate && (
+                        <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200" title="Data Ganda pada hari yang sama">
+                          Ganda
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{t.class}</span>
                   </td>
@@ -308,7 +382,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </button>
                   </td>
                 </tr>
-              )) : (
+              )}) : (
                 <tr>
                   <td colSpan={6} className="px-6 py-16 text-center text-slate-400 font-medium">
                     <div className="flex flex-col items-center justify-center space-y-3">

@@ -160,6 +160,7 @@ const App: React.FC = () => {
                 students={students || []} 
                 transactions={transactions || []} 
                 onDeleteTransaction={(id) => setTransactions(prev => (prev || []).filter(t => t.id !== id))}
+                onDeleteMultipleTransactions={(ids) => setTransactions(prev => (prev || []).filter(t => !ids.includes(t.id)))}
                 onUpdateTransaction={(updated) => setTransactions(prev => (prev || []).map(t => t.id === updated.id ? updated : t))}
               />
             )}
