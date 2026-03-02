@@ -46,7 +46,21 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
   const [editData, setEditData] = useState<Transaction | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
+  // Column filters
+  const [filterDateCol, setFilterDateCol] = useState('');
+  const [filterStudentCol, setFilterStudentCol] = useState('');
+  const [filterClassCol, setFilterClassCol] = useState('');
+  const [filterProgramCol, setFilterProgramCol] = useState('');
+  const [filterReasonCol, setFilterReasonCol] = useState('');
+
   const classes = [...new Set(students.map(s => s.class))].sort();
+
+  // Unique values for automatic column filters
+  const uniqueDates = Array.from<string>(new Set(transactions.map(t => t.date))).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const uniqueStudents = Array.from<string>(new Set(transactions.map(t => t.studentName))).sort();
+  const uniqueClasses = Array.from<string>(new Set(transactions.map(t => t.class))).sort();
+  const uniquePrograms = Array.from<string>(new Set(transactions.map(t => t.program))).sort();
+  const uniqueReasons = Array.from<string>(new Set(transactions.map(t => t.reason))).sort();
 
   const filtered = transactions.filter(t => {
     const classMatch = filterClass === 'all' || t.class === filterClass;
@@ -58,7 +72,14 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
     } else {
       dateMatch = !filterMonth || t.date.startsWith(filterMonth);
     }
-    return classMatch && dateMatch;
+    
+    const colDateMatch = !filterDateCol || t.date === filterDateCol;
+    const colStudentMatch = !filterStudentCol || t.studentName === filterStudentCol;
+    const colClassMatch = !filterClassCol || t.class === filterClassCol;
+    const colProgramMatch = !filterProgramCol || t.program === filterProgramCol;
+    const colReasonMatch = !filterReasonCol || t.reason === filterReasonCol;
+
+    return classMatch && dateMatch && colDateMatch && colStudentMatch && colClassMatch && colProgramMatch && colReasonMatch;
   });
 
   const downloadExcel = () => {
@@ -171,12 +192,84 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
           <table className="w-full text-sm text-left text-slate-600" id="reportTable">
             <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4">Hari, Tanggal</th>
-                <th className="px-6 py-4">Siswa</th>
-                <th className="px-6 py-4">Kelas</th>
-                <th className="px-6 py-4">Kegiatan</th>
-                <th className="px-6 py-4">Alasan</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+                <th className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <span>Hari, Tanggal</span>
+                    <select 
+                      value={filterDateCol}
+                      onChange={(e) => setFilterDateCol(e.target.value)}
+                      className="w-full px-2 py-1 text-xs font-normal border border-slate-200 rounded focus:outline-none focus:border-brand-500 bg-white"
+                    >
+                      <option value="">Semua Tanggal</option>
+                      {uniqueDates.map(date => (
+                        <option key={date} value={date}>
+                          {new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
+                <th className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <span>Siswa</span>
+                    <select 
+                      value={filterStudentCol}
+                      onChange={(e) => setFilterStudentCol(e.target.value)}
+                      className="w-full px-2 py-1 text-xs font-normal border border-slate-200 rounded focus:outline-none focus:border-brand-500 bg-white"
+                    >
+                      <option value="">Semua Siswa</option>
+                      {uniqueStudents.map(student => (
+                        <option key={student} value={student}>{student}</option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
+                <th className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <span>Kelas</span>
+                    <select 
+                      value={filterClassCol}
+                      onChange={(e) => setFilterClassCol(e.target.value)}
+                      className="w-full px-2 py-1 text-xs font-normal border border-slate-200 rounded focus:outline-none focus:border-brand-500 bg-white"
+                    >
+                      <option value="">Semua Kelas</option>
+                      {uniqueClasses.map(cls => (
+                        <option key={cls} value={cls}>{cls}</option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
+                <th className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <span>Kegiatan</span>
+                    <select 
+                      value={filterProgramCol}
+                      onChange={(e) => setFilterProgramCol(e.target.value)}
+                      className="w-full px-2 py-1 text-xs font-normal border border-slate-200 rounded focus:outline-none focus:border-brand-500 bg-white"
+                    >
+                      <option value="">Semua Kegiatan</option>
+                      {uniquePrograms.map(prog => (
+                        <option key={prog} value={prog}>{prog}</option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
+                <th className="px-6 py-4">
+                  <div className="flex flex-col gap-2">
+                    <span>Alasan</span>
+                    <select 
+                      value={filterReasonCol}
+                      onChange={(e) => setFilterReasonCol(e.target.value)}
+                      className="w-full px-2 py-1 text-xs font-normal border border-slate-200 rounded focus:outline-none focus:border-brand-500 bg-white"
+                    >
+                      <option value="">Semua Alasan</option>
+                      {uniqueReasons.map(reason => (
+                        <option key={reason} value={reason}>{reason}</option>
+                      ))}
+                    </select>
+                  </div>
+                </th>
+                <th className="px-6 py-4 text-center align-top">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
