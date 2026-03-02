@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Student, Transaction } from '../types';
 
@@ -9,6 +9,12 @@ interface DashboardProps {
 }
 
 const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => {
+  const [selectedSubClass, setSelectedSubClass] = useState<Record<string, string>>({
+    '7': 'Semua',
+    '8': 'Semua',
+    '9': 'Semua'
+  });
+
   const today = (() => {
     const d = new Date();
     const year = d.getFullYear();
@@ -101,19 +107,41 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
     jumlah: programCounts[key]
   })).sort((a, b) => b.jumlah - a.jumlah).slice(0, 5); // Top 5
 
-  const classCounts: Record<string, number> = {};
-  transactions.forEach(t => {
-    const student = students.find(s => String(s.id) === String(t.studentId));
-    if (student) {
-      if (!classCounts[student.class]) classCounts[student.class] = 0;
-      classCounts[student.class]++;
+  // Rekapitulasi per Siswa Kelas 7, 8, 9
+  const classGroups = ['7', '8', '9'];
+  const studentsByGrade: Record<string, (Student & { absences: number })[]> = {
+    '7': [],
+    '8': [],
+    '9': []
+  };
+  const subClassesByGrade: Record<string, string[]> = {
+    '7': [],
+    '8': [],
+    '9': []
+  };
+
+  students.forEach(s => {
+    // Ambil karakter pertama dari kelas (misal: "7A" -> "7")
+    const grade = s.class.charAt(0);
+    if (classGroups.includes(grade)) {
+      studentsByGrade[grade].push({
+        ...s,
+        absences: studentViolations[s.id]?.count || 0
+      });
+      if (!subClassesByGrade[grade].includes(s.class)) {
+        subClassesByGrade[grade].push(s.class);
+      }
     }
   });
 
-  const classData = Object.keys(classCounts).map(key => ({
-    name: key,
-    jumlah: classCounts[key]
-  })).sort((a, b) => b.jumlah - a.jumlah).slice(0, 10); // Top 10 classes
+  // Sort students by absences (descending) or by name
+  Object.keys(studentsByGrade).forEach(grade => {
+    studentsByGrade[grade].sort((a, b) => {
+      if (b.absences !== a.absences) return b.absences - a.absences;
+      return a.name.localeCompare(b.name);
+    });
+    subClassesByGrade[grade].sort();
+  });
 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
@@ -135,7 +163,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
       </div>
 
       {/* Charts Area */}
-      <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart: Ketercapaian Hari Ini */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
           <div className="mb-4">
@@ -230,53 +258,6 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
             )}
           </div>
         </div>
-
-        {/* Bar Chart: Ketidakikutsertaan per Kelas */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
-          <div className="mb-4">
-            <h3 className="font-bold text-slate-800 text-lg tracking-tight">Ketidakikutsertaan per Kelas</h3>
-            <p className="text-sm text-slate-500 mt-0.5">Berdasarkan kelas (Total)</p>
-          </div>
-          <div className="h-[320px] w-full mt-4">
-            {classData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={classData}
-                  margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
-                    dy={10}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }}
-                    allowDecimals={false}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: '#f8fafc' }}
-                    formatter={(value: number) => [value, 'Jumlah Pelanggaran']}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                  />
-                  <Bar dataKey="jumlah" fill="#10b981" radius={[6, 6, 0, 0]} barSize={40}>
-                    {classData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#059669' : '#34d399'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-slate-400 text-sm font-medium">
-                Belum ada data ketidakhadiran
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* Alert Area */}
@@ -340,6 +321,120 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
               <p className="text-sm font-medium text-slate-500">Tidak ada siswa yang perlu dipanggil saat ini.</p>
             </div>
           )}
+        </div>
+      </div>
+      {/* Rekapitulasi per Siswa Kelas 7, 8, 9 */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-indigo-50/50 px-6 py-5 border-b border-slate-100 flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+            <i className="fas fa-user-graduate text-lg"></i>
+          </div>
+          <div>
+            <h3 className="font-bold text-slate-800 text-base tracking-tight">Rekapitulasi Ketidakikutsertaan Siswa</h3>
+            <p className="text-sm text-slate-500 mt-0.5">Detail jumlah ketidakikutsertaan untuk kelas 7, 8, dan 9</p>
+          </div>
+        </div>
+        
+        <div className="p-6 flex flex-col gap-6">
+          {['7', '8', '9'].map(grade => {
+            const filteredStudents = studentsByGrade[grade].filter(s => selectedSubClass[grade] === 'Semua' || s.class === selectedSubClass[grade]);
+            
+            return (
+            <div key={grade} className="border border-slate-200 rounded-xl overflow-hidden flex flex-col">
+              <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center shrink-0">
+                <div className="flex items-center space-x-3">
+                  <h4 className="font-bold text-slate-700">Kelas {grade}</h4>
+                  <select 
+                    className="text-xs border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+                    value={selectedSubClass[grade]}
+                    onChange={(e) => setSelectedSubClass({...selectedSubClass, [grade]: e.target.value})}
+                  >
+                    <option value="Semua">Semua</option>
+                    {subClassesByGrade[grade].map(sc => (
+                      <option key={sc} value={sc}>{sc}</option>
+                    ))}
+                  </select>
+                </div>
+                <span className="text-xs font-bold bg-slate-200 text-slate-600 px-2.5 py-1 rounded-md">
+                  {filteredStudents.length} Siswa
+                </span>
+              </div>
+              
+              {/* Grafik Pelanggaran Siswa */}
+              <div className="h-[250px] w-full border-b border-slate-100 p-4 bg-white">
+                {filteredStudents.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={filteredStudents}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 40 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                      <XAxis 
+                        dataKey="name" 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#64748b', fontSize: 10 }} 
+                        tickFormatter={(name) => name.split(' ')[0]}
+                        angle={-45}
+                        textAnchor="end"
+                        height={60}
+                      />
+                      <YAxis 
+                        axisLine={false} 
+                        tickLine={false} 
+                        tick={{ fill: '#64748b', fontSize: 10 }}
+                        allowDecimals={false}
+                      />
+                      <Tooltip 
+                        cursor={{ fill: '#f8fafc' }}
+                        formatter={(value: number) => [value, 'Jumlah Pelanggaran']}
+                        labelFormatter={(label) => `Siswa: ${label}`}
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', fontSize: '12px' }}
+                      />
+                      <Bar dataKey="absences" radius={[4, 4, 0, 0]} maxBarSize={30}>
+                        {filteredStudents.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.absences > 0 ? '#f43f5e' : '#10b981'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-slate-400 text-sm font-medium">
+                    Belum ada data siswa
+                  </div>
+                )}
+              </div>
+
+              <div className="overflow-y-auto max-h-[300px] p-0 scrollbar-thin scrollbar-thumb-slate-200">
+                {filteredStudents.length > 0 ? (
+                  <table className="w-full text-sm text-left text-slate-600">
+                    <thead className="text-xs text-slate-500 uppercase font-semibold bg-white sticky top-0 shadow-sm z-10">
+                      <tr>
+                        <th className="px-4 py-3">Nama Siswa</th>
+                        <th className="px-4 py-3 text-center">Jumlah</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredStudents.map(student => (
+                        <tr key={student.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-3 font-medium text-slate-700">{student.name}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`inline-flex items-center justify-center px-2 py-1 rounded-md text-xs font-bold ${student.absences > 0 ? 'bg-rose-100 text-rose-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                              {student.absences}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-slate-400 text-sm font-medium py-8">
+                    Belum ada data siswa kelas {grade}
+                  </div>
+                )}
+              </div>
+            </div>
+          )})}
         </div>
       </div>
     </div>
