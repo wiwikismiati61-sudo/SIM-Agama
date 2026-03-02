@@ -14,43 +14,72 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
   const [selectedProgram, setSelectedProgram] = useState('');
   const [manualProgram, setManualProgram] = useState('');
   const [selectedReason, setSelectedReason] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [time, setTime] = useState(new Date().toTimeString().slice(0, 5));
+  const [date, setDate] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
+  const [time, setTime] = useState(() => {
+    const d = new Date();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  });
+
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   const classes = [...new Set(students.map(s => s.class))].sort();
   const filteredStudents = students.filter(s => s.class === selectedClass).sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedStudent || !selectedReason || (!selectedProgram && !manualProgram)) {
-      alert('Lengkapi semua data!');
+    
+    const isProgramValid = selectedProgram && (selectedProgram !== 'Lainnya' || manualProgram.trim() !== '');
+
+    if (!selectedStudent || !selectedReason || !isProgramValid) {
+      setMessage({type: 'error', text: 'Lengkapi semua data!'});
+      setTimeout(() => setMessage(null), 3000);
       return;
     }
 
-    const student = students.find(s => s.id === selectedStudent);
-    if (!student) return;
+    const student = students.find(s => String(s.id) === String(selectedStudent));
+    if (!student) {
+      setMessage({type: 'error', text: 'Siswa tidak ditemukan!'});
+      setTimeout(() => setMessage(null), 3000);
+      return;
+    }
 
     const newTrx: Transaction = {
       id: Date.now().toString(),
       date,
       time,
-      studentId: student.id,
+      studentId: String(student.id),
       studentName: student.name,
       class: student.class,
-      program: selectedProgram === 'Lainnya' ? manualProgram : selectedProgram,
+      program: selectedProgram === 'Lainnya' ? manualProgram.trim() : selectedProgram,
       reason: selectedReason
     };
 
     onAddTransaction(newTrx);
-    alert('Data ketidakhadiran berhasil disimpan!');
+    setMessage({type: 'success', text: 'Data ketidakhadiran berhasil disimpan!'});
+    setTimeout(() => setMessage(null), 3000);
     
     // Partially reset form
     setSelectedStudent('');
     setSelectedReason('');
+    setManualProgram('');
   };
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-500">
+      {message && (
+        <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 text-sm font-bold animate-in slide-in-from-top-10 fade-in duration-300 ${message.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'}`}>
+          <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-xl`}></i>
+          <span>{message.text}</span>
+        </div>
+      )}
       <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/40 overflow-hidden border border-slate-100">
         <div className="bg-gradient-to-r from-brand-600 to-brand-700 px-8 py-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>

@@ -12,7 +12,36 @@ interface ReportProps {
 
 const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTransaction, onUpdateTransaction }) => {
   const [filterClass, setFilterClass] = useState('all');
-  const [filterMonth, setFilterMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [filterType, setFilterType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [filterDate, setFilterDate] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
+  const [filterWeekStart, setFilterWeekStart] = useState(() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const start = new Date(d);
+    start.setDate(diff);
+    return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}-${String(start.getDate()).padStart(2, '0')}`;
+  });
+  const [filterWeekEnd, setFilterWeekEnd] = useState(() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1) + 6;
+    const end = new Date(d);
+    end.setDate(diff);
+    return `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')}`;
+  });
+  const [filterMonth, setFilterMonth] = useState(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}`;
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Transaction | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -21,14 +50,25 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
 
   const filtered = transactions.filter(t => {
     const classMatch = filterClass === 'all' || t.class === filterClass;
-    const monthMatch = !filterMonth || t.date.startsWith(filterMonth);
-    return classMatch && monthMatch;
+    let dateMatch = false;
+    if (filterType === 'daily') {
+      dateMatch = t.date === filterDate;
+    } else if (filterType === 'weekly') {
+      dateMatch = t.date >= filterWeekStart && t.date <= filterWeekEnd;
+    } else {
+      dateMatch = !filterMonth || t.date.startsWith(filterMonth);
+    }
+    return classMatch && dateMatch;
   });
 
   const downloadExcel = () => {
     const table = document.getElementById("reportTable");
     if (!table) return;
-    const filename = `Laporan_Absensi_${filterMonth || 'Total'}.xlsx`;
+    let periodStr = filterDate;
+    if (filterType === 'weekly') periodStr = `${filterWeekStart}_sd_${filterWeekEnd}`;
+    if (filterType === 'monthly') periodStr = filterMonth || 'Total';
+    
+    const filename = `Laporan_Absensi_${periodStr}.xlsx`;
     const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
     XLSX.writeFile(wb, filename);
   };
@@ -56,12 +96,24 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
       <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-6">
           <div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Laporan Absensi Bulanan</h3>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Laporan Absensi {filterType === 'daily' ? 'Harian' : filterType === 'weekly' ? 'Mingguan' : 'Bulanan'}</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">Arsip lengkap data ketidakhadiran siswa</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-            <div className="flex-1 min-w-[180px]">
+            <div className="flex-1 min-w-[140px]">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Tipe Laporan</label>
+              <select 
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as 'daily' | 'weekly' | 'monthly')}
+                className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer"
+              >
+                <option value="daily">Harian</option>
+                <option value="weekly">Mingguan</option>
+                <option value="monthly">Bulanan</option>
+              </select>
+            </div>
+            <div className="flex-1 min-w-[140px]">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Pilih Kelas</label>
               <select 
                 value={filterClass}
@@ -72,14 +124,39 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                 {classes.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="flex-1 min-w-[180px]">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Pilih Bulan</label>
-              <input 
-                type="month" 
-                value={filterMonth}
-                onChange={(e) => setFilterMonth(e.target.value)}
-                className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all" 
-              />
+            <div className="flex-1 min-w-[160px]">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">{filterType === 'daily' ? 'Pilih Tanggal' : filterType === 'weekly' ? 'Pilih Minggu' : 'Pilih Bulan'}</label>
+              {filterType === 'daily' ? (
+                <input 
+                  type="date" 
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all" 
+                />
+              ) : filterType === 'weekly' ? (
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="date" 
+                    value={filterWeekStart}
+                    onChange={(e) => setFilterWeekStart(e.target.value)}
+                    className="w-full border border-slate-200 bg-slate-50 px-2 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all text-sm" 
+                  />
+                  <span className="text-slate-400 font-bold">-</span>
+                  <input 
+                    type="date" 
+                    value={filterWeekEnd}
+                    onChange={(e) => setFilterWeekEnd(e.target.value)}
+                    className="w-full border border-slate-200 bg-slate-50 px-2 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all text-sm" 
+                  />
+                </div>
+              ) : (
+                <input 
+                  type="month" 
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all" 
+                />
+              )}
             </div>
             <button 
               onClick={downloadExcel}
@@ -94,7 +171,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
           <table className="w-full text-sm text-left text-slate-600" id="reportTable">
             <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4">Waktu</th>
+                <th className="px-6 py-4">Hari, Tanggal</th>
                 <th className="px-6 py-4">Siswa</th>
                 <th className="px-6 py-4">Kelas</th>
                 <th className="px-6 py-4">Kegiatan</th>
@@ -106,7 +183,9 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
               {filtered.length > 0 ? filtered.map(t => (
                 <tr key={t.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <div className="text-slate-800 font-semibold">{t.date}</div>
+                    <div className="text-slate-800 font-semibold">
+                      {new Date(t.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
                     <div className="text-xs text-slate-500 font-medium mt-0.5">{t.time}</div>
                   </td>
                   <td className="px-6 py-4 font-semibold text-slate-700">{t.studentName}</td>

@@ -30,12 +30,15 @@ const App: React.FC = () => {
 
   const [students, setStudents] = useState<Student[]>(() => {
     const saved = localStorage.getItem('sim_db');
-    return saved ? JSON.parse(saved).students : [];
+    return saved ? (JSON.parse(saved).students || []) : [];
   });
 
   const [programs, setPrograms] = useState<Program[]>(() => {
     const saved = localStorage.getItem('sim_db');
-    if (saved) return JSON.parse(saved).programs;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.programs && parsed.programs.length > 0) return parsed.programs;
+    }
     return [
       { id: '1', name: 'Sholat Dhuha', time: '07:00' },
       { id: '2', name: 'Sholat Dzuhur', time: '12:00' },
@@ -45,7 +48,7 @@ const App: React.FC = () => {
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem('sim_db');
-    return saved ? JSON.parse(saved).transactions : [];
+    return saved ? (JSON.parse(saved).transactions || []) : [];
   });
 
   const [schedules, setSchedules] = useState<Schedule[]>(() => {
@@ -65,9 +68,13 @@ const App: React.FC = () => {
 
   // Persistance
   useEffect(() => {
-    const db = { students, programs, transactions, schedules };
-    localStorage.setItem('sim_db', JSON.stringify(db));
-    localStorage.setItem('sim_auth', JSON.stringify(auth));
+    try {
+      const db = { students, programs, transactions, schedules };
+      localStorage.setItem('sim_db', JSON.stringify(db));
+      localStorage.setItem('sim_auth', JSON.stringify(auth));
+    } catch (error) {
+      console.error('Failed to save to localStorage', error);
+    }
   }, [students, programs, transactions, schedules, auth]);
 
   const handleLogin = (u: string, p: string) => {
@@ -129,36 +136,36 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto">
             {currentView === 'dashboard' && (
               <DashboardView 
-                students={students} 
-                transactions={transactions} 
+                students={students || []} 
+                transactions={transactions || []} 
               />
             )}
             {currentView === 'master' && (
               <MasterView 
-                students={students} 
+                students={students || []} 
                 setStudents={setStudents} 
-                programs={programs} 
+                programs={programs || []} 
                 setPrograms={setPrograms} 
               />
             )}
             {currentView === 'transaksi' && (
               <TransactionView 
-                students={students} 
-                programs={programs} 
-                onAddTransaction={(t) => setTransactions([t, ...transactions])} 
+                students={students || []} 
+                programs={programs || []} 
+                onAddTransaction={(t) => setTransactions(prev => [t, ...(Array.isArray(prev) ? prev : [])])} 
               />
             )}
             {currentView === 'laporan' && (
               <ReportView 
-                students={students} 
-                transactions={transactions} 
-                onDeleteTransaction={(id) => setTransactions(transactions.filter(t => t.id !== id))}
-                onUpdateTransaction={(updated) => setTransactions(transactions.map(t => t.id === updated.id ? updated : t))}
+                students={students || []} 
+                transactions={transactions || []} 
+                onDeleteTransaction={(id) => setTransactions(prev => (prev || []).filter(t => t.id !== id))}
+                onUpdateTransaction={(updated) => setTransactions(prev => (prev || []).map(t => t.id === updated.id ? updated : t))}
               />
             )}
             {currentView === 'jadwal' && (
               <ScheduleView 
-                schedules={schedules}
+                schedules={schedules || []}
                 setSchedules={setSchedules}
               />
             )}

@@ -14,6 +14,12 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
   const [modalType, setModalType] = useState<'program' | 'student' | null>(null);
   const [formData, setFormData] = useState({ name: '', val: '' });
   const [deleteTarget, setDeleteTarget] = useState<{ type: 'program' | 'student', id: string, name: string } | null>(null);
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({type, text});
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   const handleConfirmDelete = () => {
     if (!deleteTarget) return;
@@ -23,6 +29,7 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
       setStudents(students.filter(s => s.id !== deleteTarget.id));
     }
     setDeleteTarget(null);
+    showMessage('success', 'Data berhasil dihapus.');
   };
 
   const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +46,7 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
 
         if (data.length < 2) {
-          alert('File Excel kosong atau tidak memiliki data.');
+          showMessage('error', 'File Excel kosong atau tidak memiliki data.');
           return;
         }
 
@@ -56,17 +63,17 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
         
         if (newStudents.length > 0) {
           setStudents(prev => [...prev, ...newStudents]);
-          alert(`Berhasil mengimpor ${newStudents.length} data siswa baru.`);
+          showMessage('success', `Berhasil mengimpor ${newStudents.length} data siswa baru.`);
         } else {
-          alert('Tidak ada data siswa valid yang ditemukan di file Excel.');
+          showMessage('error', 'Tidak ada data siswa valid yang ditemukan di file Excel.');
         }
       } catch (error) {
-        alert('Terjadi kesalahan saat membaca file Excel. Pastikan formatnya benar.');
+        showMessage('error', 'Terjadi kesalahan saat membaca file Excel. Pastikan formatnya benar.');
         console.error("Excel read error:", error);
       }
     };
     reader.onerror = () => {
-        alert('Gagal membaca file.');
+        showMessage('error', 'Gagal membaca file.');
     };
     reader.readAsBinaryString(file);
     e.target.value = '';
@@ -74,22 +81,29 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
 
   const saveForm = () => {
     if (!formData.name.trim() || !formData.val.trim()) {
-      alert('Semua kolom harus diisi.');
+      showMessage('error', 'Semua kolom harus diisi.');
       return;
     }
 
     if (modalType === 'program') {
-      setPrograms([...programs, { id: Date.now().toString(), name: formData.name.trim(), time: formData.val.trim() }]);
+      setPrograms([...(Array.isArray(programs) ? programs : []), { id: Date.now().toString(), name: formData.name.trim(), time: formData.val.trim() }]);
     } else if (modalType === 'student') {
-      setStudents([...students, { id: Date.now().toString(), name: formData.name.trim(), class: formData.val.trim() }]);
+      setStudents([...(Array.isArray(students) ? students : []), { id: Date.now().toString(), name: formData.name.trim(), class: formData.val.trim() }]);
     }
 
     setModalType(null);
     setFormData({ name: '', val: '' });
+    showMessage('success', 'Data berhasil ditambahkan.');
   };
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+      {message && (
+        <div className={`p-4 rounded-xl flex items-center space-x-3 text-sm font-bold animate-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+          <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-lg`}></i>
+          <span>{message.text}</span>
+        </div>
+      )}
       
       {/* Program Management */}
       <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">

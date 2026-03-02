@@ -35,6 +35,12 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
   const [formData, setFormData] = useState<Omit<Schedule, 'id'>>(EMPTY_SCHEDULE);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [otherActivity, setOtherActivity] = useState('');
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({type, text});
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   const openModalForAdd = () => {
     setEditingSchedule(null);
@@ -57,7 +63,7 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
   const handleSave = () => {
     const finalActivity = formData.activity === 'Lainnya' ? otherActivity : formData.activity;
     if (!finalActivity || !formData.day || !formData.week || !formData.month || !formData.year || !formData.class) {
-      alert('Mohon lengkapi semua kolom yang wajib diisi (Kegiatan, Hari, Minggu, Bulan, Tahun, Kelas).');
+      showMessage('error', 'Mohon lengkapi semua kolom yang wajib diisi (Kegiatan, Hari, Minggu, Bulan, Tahun, Kelas).');
       return;
     }
 
@@ -66,6 +72,7 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
       setSchedules(schedules.map(s => 
         s.id === editingSchedule.id ? { ...s, ...formData, activity: finalActivity } : s
       ));
+      showMessage('success', 'Jadwal berhasil diperbarui.');
     } else {
       // Add new
       const newSchedule: Schedule = {
@@ -74,6 +81,7 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
         activity: finalActivity,
       };
       setSchedules([...schedules, newSchedule]);
+      showMessage('success', 'Jadwal berhasil ditambahkan.');
     }
     setIsModalOpen(false);
   };
@@ -82,12 +90,13 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
     if (deleteTarget) {
         setSchedules(schedules.filter(s => s.id !== deleteTarget.id));
         setDeleteTarget(null);
+        showMessage('success', 'Jadwal berhasil dihapus.');
     }
   };
 
   const downloadScheduleExcel = () => {
     if (schedules.length === 0) {
-        alert("Tidak ada data jadwal untuk diunduh.");
+        showMessage('error', "Tidak ada data jadwal untuk diunduh.");
         return;
     }
 
@@ -117,6 +126,12 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
+      {message && (
+        <div className={`p-4 rounded-xl flex items-center space-x-3 text-sm font-bold animate-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+          <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-lg`}></i>
+          <span>{message.text}</span>
+        </div>
+      )}
       <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>

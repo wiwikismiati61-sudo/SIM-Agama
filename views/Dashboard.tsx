@@ -8,7 +8,13 @@ interface DashboardProps {
 }
 
 const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = (() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })();
   const totalStudents = students.length;
   const absentsToday = transactions.filter(t => t.date === today).length;
   const earlyDepartures = transactions.filter(t => t.reason === 'Pulang sebelum waktunya').length;
@@ -23,7 +29,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
   const parentCallList = Object.keys(violationCounts)
     .filter(id => violationCounts[id] > 2)
     .map(id => {
-      const student = students.find(s => s.id === id);
+      const student = students.find(s => String(s.id) === String(id));
       return student ? { ...student, count: violationCounts[id] } : null;
     })
     .filter((item): item is (Student & { count: number }) => item !== null);

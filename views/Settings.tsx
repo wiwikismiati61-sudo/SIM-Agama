@@ -11,14 +11,37 @@ interface SettingsProps {
 const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }) => {
   const [newU, setNewU] = useState('');
   const [newP, setNewP] = useState('');
+  const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{type: 'auth' | 'clear', title: string, desc: string} | null>(null);
+
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({type, text});
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   const handleUpdateAuth = (e: React.FormEvent) => {
     e.preventDefault();
     if (newU && newP) {
-      if (confirm('Password akan diperbarui dan Anda akan diminta login ulang. Lanjutkan?')) {
-        onUpdateAuth({ user: newU, pass: newP });
-      }
+      setConfirmAction({
+        type: 'auth',
+        title: 'Perbarui Kredensial?',
+        desc: 'Password akan diperbarui dan Anda akan diminta login ulang. Lanjutkan?'
+      });
+    } else {
+      showMessage('error', 'Username dan Password baru harus diisi!');
     }
+  };
+
+  const executeConfirmAction = () => {
+    if (!confirmAction) return;
+    
+    if (confirmAction.type === 'auth') {
+      onUpdateAuth({ user: newU, pass: newP });
+    } else if (confirmAction.type === 'clear') {
+      localStorage.clear();
+      window.location.reload();
+    }
+    setConfirmAction(null);
   };
 
   const backupData = () => {
@@ -41,12 +64,12 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
         const json = JSON.parse(evt.target?.result as string);
         if (json.students && json.transactions) {
           onRestore(json);
-          alert('Database berhasil dipulihkan!');
+          showMessage('success', 'Database berhasil dipulihkan!');
         } else {
-          alert('Format file tidak valid. Pastikan file backup berasal dari aplikasi ini.');
+          showMessage('error', 'Format file tidak valid. Pastikan file backup berasal dari aplikasi ini.');
         }
       } catch (err) {
-        alert('Gagal memproses file. File mungkin rusak.');
+        showMessage('error', 'Gagal memproses file. File mungkin rusak.');
       }
     };
     reader.readAsText(file);
@@ -54,14 +77,21 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
   };
 
   const clearAllData = () => {
-    if (confirm('PERINGATAN! Ini akan menghapus seluruh database (siswa, absensi, jadwal, dll) secara permanen. Apakah Anda yakin ingin melanjutkan?')) {
-      localStorage.clear();
-      window.location.reload();
-    }
+    setConfirmAction({
+      type: 'clear',
+      title: 'Hapus Seluruh Data?',
+      desc: 'PERINGATAN! Ini akan menghapus seluruh database (siswa, absensi, jadwal, dll) secara permanen. Apakah Anda yakin ingin melanjutkan?'
+    });
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-right-4 duration-500">
+      {message && (
+        <div className={`p-4 rounded-xl flex items-center space-x-3 text-sm font-bold animate-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+          <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-lg`}></i>
+          <span>{message.text}</span>
+        </div>
+      )}
       
       {/* Auth Security */}
       <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
@@ -155,6 +185,35 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
           </button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmAction && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl ${confirmAction.type === 'clear' ? 'bg-rose-50 text-rose-500' : 'bg-amber-50 text-amber-500'}`}>
+              <i className={`fas ${confirmAction.type === 'clear' ? 'fa-trash-alt' : 'fa-shield-alt'}`}></i>
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">{confirmAction.title}</h3>
+            <p className="text-slate-500 text-sm font-medium mb-8">
+              {confirmAction.desc}
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={executeConfirmAction}
+                className={`w-full py-3.5 text-white rounded-xl text-sm font-bold transition-all shadow-lg active:scale-[0.98] ${confirmAction.type === 'clear' ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/30' : 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/30'}`}
+              >
+                Ya, Lanjutkan
+              </button>
+              <button 
+                onClick={() => setConfirmAction(null)}
+                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
+              >
+                Batalkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
