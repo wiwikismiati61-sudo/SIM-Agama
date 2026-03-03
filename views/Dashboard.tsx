@@ -75,11 +75,53 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
     })
     .filter((item): item is (Student & { count: number, details: string[] }) => item !== null);
 
+  // Logic: Pemantauan Kesehatan (Haid > 14 hari)
+  const healthMonitoringList: (Student & { firstHaid: string, lastHaid: string, duration: number })[] = [];
+  
+  Object.keys(studentTx).forEach(studentId => {
+    const txs = studentTx[studentId].filter(t => t.reason === 'Haid');
+    if (txs.length === 0) return;
+
+    // Group by month-year
+    const haidByMonth: Record<string, string[]> = {};
+    txs.forEach(t => {
+      const date = new Date(t.date);
+      const monthYear = `${date.getFullYear()}-${date.getMonth()}`;
+      if (!haidByMonth[monthYear]) haidByMonth[monthYear] = [];
+      haidByMonth[monthYear].push(t.date);
+    });
+
+    Object.keys(haidByMonth).forEach(monthYear => {
+      const dates = haidByMonth[monthYear].sort();
+      if (dates.length > 0) {
+        const firstDate = new Date(dates[0]);
+        const lastDate = new Date(dates[dates.length - 1]);
+        const diffTime = Math.abs(lastDate.getTime() - firstDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays > 14) {
+          const student = students.find(s => String(s.id) === String(studentId));
+          if (student) {
+            if (!healthMonitoringList.find(s => s.id === student.id)) {
+              healthMonitoringList.push({
+                ...student,
+                firstHaid: dates[0],
+                lastHaid: dates[dates.length - 1],
+                duration: diffDays
+              });
+            }
+          }
+        }
+      }
+    });
+  });
+
   const stats = [
     { label: 'Total Siswa Terdata', value: totalStudents, icon: 'fas fa-users', color: 'brand' },
     { label: 'Ketidakhadiran Hari Ini', value: absentsToday, icon: 'fas fa-calendar-day', color: 'indigo' },
     { label: 'Pulang Sebelum Waktu', value: earlyDepartures, icon: 'fas fa-clock', color: 'rose' },
     { label: 'Perlu Panggilan Ortu', value: parentCallList.length, icon: 'fas fa-phone-alt', color: 'amber' },
+    { label: 'Screening Kesehatan', value: healthMonitoringList.length, icon: 'fas fa-notes-medical', color: 'rose' },
   ];
 
   const colorClasses: Record<string, { bg: string, text: string, iconBg: string, iconText: string, border: string }> = {
@@ -146,7 +188,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {stats.map((s, i) => (
           <div key={i} className={`p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${colorClasses[s.color].border} ${colorClasses[s.color].bg} transition-all hover:shadow-md hover:-translate-y-1`}>
             <div className="flex justify-between items-start">
@@ -323,6 +365,67 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
           )}
         </div>
       </div>
+
+      {/* Health Monitoring Area */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-amber-50/50 px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <i className="fas fa-notes-medical text-lg"></i>
+            </div>
+            <div>
+              <h3 className="font-bold text-slate-800 text-base tracking-tight">Pemantauan Kesehatan (Screening)</h3>
+              <p className="text-sm text-slate-500 mt-0.5">Siswa dengan siklus haid &gt; 14 hari</p>
+            </div>
+          </div>
+          <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perlu Screening</span>
+        </div>
+        
+        <div className="p-0 overflow-x-auto">
+          {healthMonitoringList.length > 0 ? (
+            <table className="w-full text-sm text-left text-slate-600">
+              <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+                <tr>
+                  <th className="px-6 py-4">Nama Siswa</th>
+                  <th className="px-6 py-4">Kelas</th>
+                  <th className="px-6 py-4">Awal Haid</th>
+                  <th className="px-6 py-4">Akhir Haid</th>
+                  <th className="px-6 py-4 text-center">Durasi</th>
+                  <th className="px-6 py-4 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {healthMonitoringList.map((s, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-6 py-4 font-semibold text-slate-800">{s.name}</td>
+                    <td className="px-6 py-4 text-slate-500">{s.class}</td>
+                    <td className="px-6 py-4 text-slate-500">{new Date(s.firstHaid).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                    <td className="px-6 py-4 text-slate-500">{new Date(s.lastHaid).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-bold text-sm">
+                        {s.duration} Hari
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button className="bg-white border border-slate-200 text-slate-600 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 text-xs font-semibold px-4 py-2 rounded-lg transition-all shadow-sm">
+                        Tindak Lanjut
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-slate-400 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <i className="fas fa-check text-2xl text-emerald-500"></i>
+              </div>
+              <p className="text-sm font-medium text-slate-500">Tidak ada siswa yang memerlukan pemantauan kesehatan saat ini.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Rekapitulasi per Siswa Kelas 7, 8, 9 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="bg-indigo-50/50 px-6 py-5 border-b border-slate-100 flex items-center space-x-4">
