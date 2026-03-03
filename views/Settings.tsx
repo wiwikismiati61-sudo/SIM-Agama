@@ -52,6 +52,8 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+    showMessage('success', 'Data backup berhasil diunduh!');
+    alert('Data backup berhasil diunduh!');
   };
 
   const handleRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +66,8 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
         const json = JSON.parse(evt.target?.result as string);
         if (json.students && json.transactions) {
           onRestore(json);
-          showMessage('success', 'Database berhasil dipulihkan!');
+          showMessage('success', 'Data restore berhasil diunduh dan dipulihkan!');
+          alert('Data restore berhasil diunduh dan dipulihkan!');
         } else {
           showMessage('error', 'Format file tidak valid. Pastikan file backup berasal dari aplikasi ini.');
         }
@@ -87,7 +90,7 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-right-4 duration-500">
       {message && (
-        <div className={`p-4 rounded-xl flex items-center space-x-3 text-sm font-bold animate-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+        <div className={`fixed top-6 right-6 z-[100] p-4 rounded-xl shadow-xl flex items-center space-x-3 text-sm font-bold animate-in slide-in-from-top-4 ${message.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
           <i className={`fas ${message.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} text-lg`}></i>
           <span>{message.text}</span>
         </div>
@@ -166,7 +169,7 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
             <div className="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-inner">
               <i className="fas fa-cloud-upload-alt text-2xl"></i>
             </div>
-            <input type="file" className="hidden" accept=".json" onChange={handleRestore} />
+            <input type="file" className="hidden" accept="*/*" onChange={handleRestore} />
             <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-700">Restore Data</span>
             <span className="text-xs font-medium text-slate-400 mt-1">Unggah file JSON</span>
           </label>
