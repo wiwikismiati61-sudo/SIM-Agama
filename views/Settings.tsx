@@ -97,9 +97,9 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
       )}
       
       {/* Auth Security */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
-        <div className="flex items-center space-x-4 mb-8">
+        <div className="flex items-center space-x-4 mb-6 md:mb-8">
           <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
             <i className="fas fa-shield-alt text-xl"></i>
           </div>
@@ -137,7 +137,7 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
       </div>
 
       {/* Database Management */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-500 to-indigo-500"></div>
         <div className="flex items-center space-x-4 mb-4">
           <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center text-brand-600 shadow-inner">

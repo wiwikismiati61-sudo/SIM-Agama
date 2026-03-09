@@ -132,8 +132,8 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
           <span>{message.text}</span>
         </div>
       )}
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
           <div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight">Jadwal Kegiatan Agama Mingguan</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">Pengaturan jadwal rutin pembiasaan keagamaan</p>
@@ -156,32 +156,32 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
 
         <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full text-sm text-left text-slate-600">
-            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+            <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4">Kegiatan</th>
-                <th className="px-6 py-4">Waktu Pelaksanaan</th>
-                <th className="px-6 py-4">Kelas</th>
-                <th className="px-6 py-4">Keterangan</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Kegiatan</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Waktu Pelaksanaan</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Kelas</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Keterangan</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {schedules.length > 0 ? schedules.map(s => (
                 <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4 font-semibold text-slate-800">{s.activity}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-slate-800">{s.activity}</td>
+                  <td className="px-4 py-3 md:px-6 md:py-4">
                     <div className="font-semibold text-slate-700">{s.day}</div>
-                    <div className="text-xs text-brand-600 font-bold mt-0.5">{s.week}</div>
+                    <div className="text-[10px] md:text-xs text-brand-600 font-bold mt-0.5">{s.week}</div>
                     {s.month && s.month !== 'Setiap Bulan' && (
-                        <div className="text-xs text-indigo-600 font-bold mt-0.5">{s.month}</div>
+                        <div className="text-[10px] md:text-xs text-indigo-600 font-bold mt-0.5">{s.month}</div>
                     )}
-                    <div className="text-xs text-slate-500 font-medium mt-0.5">{s.year}</div>
+                    <div className="text-[10px] md:text-xs text-slate-500 font-medium mt-0.5">{s.year}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{s.class}</span>
+                  <td className="px-4 py-3 md:px-6 md:py-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-[10px] md:text-xs border border-slate-200">{s.class}</span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-500">{s.notes || '-'}</td>
-                  <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <td className="px-4 py-3 md:px-6 md:py-4 text-xs md:text-sm text-slate-500">{s.notes || '-'}</td>
+                  <td className="px-4 py-3 md:px-6 md:py-4 text-center whitespace-nowrap">
                     <button onClick={() => openModalForEdit(s)} className="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 mr-2 transition-colors">
                       <i className="fas fa-edit"></i>
                     </button>

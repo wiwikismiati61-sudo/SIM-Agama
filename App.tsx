@@ -132,7 +132,7 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col overflow-hidden relative">
         <Header viewTitle={currentView} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
         
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 lg:px-12">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {currentView === 'dashboard' && (
               <DashboardView 

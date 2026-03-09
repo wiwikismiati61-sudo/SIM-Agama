@@ -160,8 +160,8 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-6">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-6">
           <div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight">Laporan Absensi {filterType === 'daily' ? 'Harian' : filterType === 'weekly' ? 'Mingguan' : 'Bulanan'}</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">Arsip lengkap data ketidakhadiran siswa</p>
@@ -253,9 +253,9 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
 
         <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full text-sm text-left text-slate-600" id="reportTable">
-            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+            <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4">
+                <th className="px-4 py-3 md:px-6 md:py-4">
                   <div className="flex flex-col gap-2">
                     <span>Hari, Tanggal</span>
                     <select 
@@ -272,7 +272,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </select>
                   </div>
                 </th>
-                <th className="px-6 py-4">
+                <th className="px-4 py-3 md:px-6 md:py-4">
                   <div className="flex flex-col gap-2">
                     <span>Siswa</span>
                     <select 
@@ -287,7 +287,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </select>
                   </div>
                 </th>
-                <th className="px-6 py-4">
+                <th className="px-4 py-3 md:px-6 md:py-4">
                   <div className="flex flex-col gap-2">
                     <span>Kelas</span>
                     <select 
@@ -302,7 +302,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </select>
                   </div>
                 </th>
-                <th className="px-6 py-4">
+                <th className="px-4 py-3 md:px-6 md:py-4">
                   <div className="flex flex-col gap-2">
                     <span>Kegiatan</span>
                     <select 
@@ -317,7 +317,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </select>
                   </div>
                 </th>
-                <th className="px-6 py-4">
+                <th className="px-4 py-3 md:px-6 md:py-4">
                   <div className="flex flex-col gap-2">
                     <span>Alasan</span>
                     <select 
@@ -332,7 +332,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </select>
                   </div>
                 </th>
-                <th className="px-6 py-4 text-center align-top">Aksi</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-center align-top">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -340,13 +340,13 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                 const isDuplicate = duplicateKeys.has(`${t.studentId}-${t.date}-${t.time}-${t.program}`);
                 return (
                 <tr key={t.id} className={`hover:bg-slate-50/50 transition-colors group ${isDuplicate && showDoubleOnly ? 'bg-amber-50/30' : ''}`}>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3 md:px-6 md:py-4">
                     <div className="text-slate-800 font-semibold">
                       {new Date(t.date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                     </div>
-                    <div className="text-xs text-slate-500 font-medium mt-0.5">{t.time}</div>
+                    <div className="text-[10px] md:text-xs text-slate-500 font-medium mt-0.5">{t.time}</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3 md:px-6 md:py-4">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-slate-700">{t.studentName}</span>
                       {isDuplicate && (
@@ -356,16 +356,16 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{t.class}</span>
+                  <td className="px-4 py-3 md:px-6 md:py-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-[10px] md:text-xs border border-slate-200">{t.class}</span>
                   </td>
-                  <td className="px-6 py-4 font-medium text-slate-600">{t.program}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-brand-50 text-brand-700 font-semibold text-xs border border-brand-100">
+                  <td className="px-4 py-3 md:px-6 md:py-4 font-medium text-slate-600">{t.program}</td>
+                  <td className="px-4 py-3 md:px-6 md:py-4">
+                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-brand-50 text-brand-700 font-semibold text-[10px] md:text-xs border border-brand-100">
                       {t.reason}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center whitespace-nowrap">
+                  <td className="px-4 py-3 md:px-6 md:py-4 text-center whitespace-nowrap">
                     <button 
                       onClick={() => startEdit(t)} 
                       className="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 mr-2 transition-colors"

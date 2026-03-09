@@ -188,15 +188,15 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
         {stats.map((s, i) => (
-          <div key={i} className={`p-6 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${colorClasses[s.color].border} ${colorClasses[s.color].bg} transition-all hover:shadow-md hover:-translate-y-1`}>
+          <div key={i} className={`p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${colorClasses[s.color].border} ${colorClasses[s.color].bg} transition-all hover:shadow-md hover:-translate-y-1`}>
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-2">{s.label}</p>
-                <h3 className={`text-3xl font-black ${colorClasses[s.color].text}`}>{s.value}</h3>
+                <p className="text-[10px] md:text-[11px] text-slate-500 uppercase font-bold tracking-wider mb-1 md:mb-2">{s.label}</p>
+                <h3 className={`text-2xl md:text-3xl font-black ${colorClasses[s.color].text}`}>{s.value}</h3>
               </div>
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${colorClasses[s.color].iconBg} ${colorClasses[s.color].iconText}`}>
+              <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-lg md:text-xl ${colorClasses[s.color].iconBg} ${colorClasses[s.color].iconText}`}>
                 <i className={s.icon}></i>
               </div>
             </div>
@@ -205,14 +205,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
       </div>
 
       {/* Charts Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Pie Chart: Ketercapaian Hari Ini */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
           <div className="mb-4">
             <h3 className="font-bold text-slate-800 text-lg tracking-tight">Ketercapaian Kegiatan Hari Ini</h3>
             <p className="text-sm text-slate-500 mt-0.5">Persentase siswa yang mengikuti kegiatan keagamaan</p>
           </div>
-          <div className="h-[320px] w-full relative mt-4">
+          <div className="h-[250px] md:h-[300px] w-full relative mt-4">
             {totalStudents > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -254,12 +254,12 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
         </div>
 
         {/* Bar Chart: Ketidakikutsertaan per Kegiatan */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
           <div className="mb-4">
             <h3 className="font-bold text-slate-800 text-lg tracking-tight">Ketidakikutsertaan Terbanyak</h3>
             <p className="text-sm text-slate-500 mt-0.5">Berdasarkan jenis kegiatan keagamaan (Total)</p>
           </div>
-          <div className="h-[320px] w-full mt-4">
+          <div className="h-[250px] md:h-[300px] w-full mt-4">
             {programData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -304,50 +304,50 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
 
       {/* Alert Area */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-rose-50/50 px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-rose-50/50 px-4 py-4 md:px-6 md:py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
-              <i className="fas fa-exclamation-triangle text-lg"></i>
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+              <i className="fas fa-exclamation-triangle text-base md:text-lg"></i>
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-base tracking-tight">Daftar Panggilan Orang Tua</h3>
-              <p className="text-sm text-slate-500 mt-0.5">Siswa dengan &gt; 2x pelanggaran kegiatan</p>
+              <h3 className="font-bold text-slate-800 text-sm md:text-base tracking-tight">Daftar Panggilan Orang Tua</h3>
+              <p className="text-xs md:text-sm text-slate-500 mt-0.5">Siswa dengan &gt; 2x pelanggaran kegiatan</p>
             </div>
           </div>
-          <span className="bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perhatian Khusus</span>
+          <span className="bg-rose-500 text-white text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perhatian Khusus</span>
         </div>
         
         <div className="p-0 overflow-x-auto">
           {parentCallList.length > 0 ? (
             <table className="w-full text-sm text-left text-slate-600">
-              <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+              <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
                 <tr>
-                  <th className="px-6 py-4">Nama Siswa</th>
-                  <th className="px-6 py-4">Kelas</th>
-                  <th className="px-6 py-4">Detail Pelanggaran</th>
-                  <th className="px-6 py-4 text-center">Total Pelanggaran</th>
-                  <th className="px-6 py-4 text-center">Status</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Nama Siswa</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Kelas</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Detail Pelanggaran</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Total Pelanggaran</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {parentCallList.map((s, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4 font-semibold text-slate-800">{s.name}</td>
-                    <td className="px-6 py-4 text-slate-500">{s.class}</td>
-                    <td className="px-6 py-4 text-slate-500 text-xs">
+                    <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-slate-800">{s.name}</td>
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-slate-500">{s.class}</td>
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-slate-500 text-xs">
                       <ul className="list-disc list-inside space-y-1">
                         {s.details.map((detail, i) => (
                           <li key={i}>{detail}</li>
                         ))}
                       </ul>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-bold text-sm">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
+                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 font-bold text-xs md:text-sm">
                         {s.count} Kali
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="bg-white border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-xs font-semibold px-4 py-2 rounded-lg transition-all shadow-sm">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
+                      <button className="bg-white border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 rounded-lg transition-all shadow-sm">
                         Proses Panggilan
                       </button>
                     </td>
@@ -368,46 +368,46 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
 
       {/* Health Monitoring Area */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-amber-50/50 px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-amber-50/50 px-4 py-4 md:px-6 md:py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
-              <i className="fas fa-notes-medical text-lg"></i>
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <i className="fas fa-notes-medical text-base md:text-lg"></i>
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-base tracking-tight">Pemantauan Kesehatan (Screening)</h3>
-              <p className="text-sm text-slate-500 mt-0.5">Siswa dengan siklus haid &gt; 14 hari</p>
+              <h3 className="font-bold text-slate-800 text-sm md:text-base tracking-tight">Pemantauan Kesehatan (Screening)</h3>
+              <p className="text-xs md:text-sm text-slate-500 mt-0.5">Siswa dengan siklus haid &gt; 14 hari</p>
             </div>
           </div>
-          <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perlu Screening</span>
+          <span className="bg-amber-500 text-white text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perlu Screening</span>
         </div>
         
         <div className="p-0 overflow-x-auto">
           {healthMonitoringList.length > 0 ? (
             <table className="w-full text-sm text-left text-slate-600">
-              <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+              <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
                 <tr>
-                  <th className="px-6 py-4">Nama Siswa</th>
-                  <th className="px-6 py-4">Kelas</th>
-                  <th className="px-6 py-4">Awal Haid</th>
-                  <th className="px-6 py-4">Akhir Haid</th>
-                  <th className="px-6 py-4 text-center">Durasi</th>
-                  <th className="px-6 py-4 text-center">Status</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Nama Siswa</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Kelas</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Awal Haid</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4">Akhir Haid</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Durasi</th>
+                  <th className="px-4 py-3 md:px-6 md:py-4 text-center">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {healthMonitoringList.map((s, idx) => (
                   <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4 font-semibold text-slate-800">{s.name}</td>
-                    <td className="px-6 py-4 text-slate-500">{s.class}</td>
-                    <td className="px-6 py-4 text-slate-500">{new Date(s.firstHaid).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                    <td className="px-6 py-4 text-slate-500">{new Date(s.lastHaid).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-bold text-sm">
+                    <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-slate-800">{s.name}</td>
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-slate-500">{s.class}</td>
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-slate-500">{new Date(s.firstHaid).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-slate-500">{new Date(s.lastHaid).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
+                      <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 font-bold text-xs md:text-sm">
                         {s.duration} Hari
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <button className="bg-white border border-slate-200 text-slate-600 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 text-xs font-semibold px-4 py-2 rounded-lg transition-all shadow-sm">
+                    <td className="px-4 py-3 md:px-6 md:py-4 text-center">
+                      <button className="bg-white border border-slate-200 text-slate-600 hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 rounded-lg transition-all shadow-sm">
                         Tindak Lanjut
                       </button>
                     </td>
@@ -428,17 +428,17 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
 
       {/* Rekapitulasi per Siswa Kelas 7, 8, 9 */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="bg-indigo-50/50 px-6 py-5 border-b border-slate-100 flex items-center space-x-4">
-          <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
-            <i className="fas fa-user-graduate text-lg"></i>
+        <div className="bg-indigo-50/50 px-4 py-4 md:px-6 md:py-5 border-b border-slate-100 flex items-center space-x-4">
+          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+            <i className="fas fa-user-graduate text-base md:text-lg"></i>
           </div>
           <div>
-            <h3 className="font-bold text-slate-800 text-base tracking-tight">Rekapitulasi Ketidakikutsertaan Siswa</h3>
-            <p className="text-sm text-slate-500 mt-0.5">Detail jumlah ketidakikutsertaan untuk kelas 7, 8, dan 9</p>
+            <h3 className="font-bold text-slate-800 text-sm md:text-base tracking-tight">Rekapitulasi Ketidakikutsertaan Siswa</h3>
+            <p className="text-xs md:text-sm text-slate-500 mt-0.5">Detail jumlah ketidakikutsertaan untuk kelas 7, 8, dan 9</p>
           </div>
         </div>
         
-        <div className="p-6 flex flex-col gap-6">
+        <div className="p-4 md:p-6 flex flex-col gap-6">
           {['7', '8', '9'].map(grade => {
             const filteredStudents = studentsByGrade[grade].filter(s => selectedSubClass[grade] === 'Semua' || s.class === selectedSubClass[grade]);
             

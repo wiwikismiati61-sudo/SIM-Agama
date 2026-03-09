@@ -81,13 +81,13 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
         </div>
       )}
       <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/40 overflow-hidden border border-slate-100">
-        <div className="bg-gradient-to-r from-brand-600 to-brand-700 px-8 py-8 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-brand-600 to-brand-700 px-6 py-6 md:px-8 md:py-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
           <h3 className="text-2xl font-black text-white tracking-tight relative z-10">Formulir Input Ketidakhadiran</h3>
           <p className="text-brand-100 text-sm font-medium mt-1 relative z-10">Catat ketidakhadiran siswa pada kegiatan keagamaan</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-8">
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 md:space-y-8">
           {/* Row 1: DateTime */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -98,7 +98,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
                   type="date" 
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 pl-12 pr-4 py-3.5 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all" 
+                  className="w-full bg-slate-50 border border-slate-200 pl-12 pr-4 py-3 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all" 
                 />
               </div>
             </div>
@@ -110,7 +110,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
                   type="time" 
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 pl-12 pr-4 py-3.5 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all" 
+                  className="w-full bg-slate-50 border border-slate-200 pl-12 pr-4 py-3 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all" 
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
               <select 
                 value={selectedClass}
                 onChange={(e) => { setSelectedClass(e.target.value); setSelectedStudent(''); }}
-                className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer"
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer"
               >
                 <option value="">-- Pilih Kelas --</option>
                 {classes.map(c => <option key={c} value={c}>{c}</option>)}
@@ -135,7 +135,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
                 value={selectedStudent}
                 disabled={!selectedClass}
                 onChange={(e) => setSelectedStudent(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">{selectedClass ? '-- Pilih Siswa --' : '-- Pilih Kelas Dulu --'}</option>
                 {filteredStudents.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -150,7 +150,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
               <select 
                 value={selectedProgram}
                 onChange={(e) => setSelectedProgram(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer"
+                className="flex-1 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all cursor-pointer"
               >
                 <option value="">-- Pilih Kegiatan --</option>
                 {programs.map(p => <option key={p.id} value={p.name}>{p.name} ({p.time})</option>)}
@@ -162,7 +162,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
                   placeholder="Nama kegiatan manual..."
                   value={manualProgram}
                   onChange={(e) => setManualProgram(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all"
+                  className="flex-1 bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 focus:outline-none font-semibold text-slate-700 transition-all"
                 />
               )}
             </div>
@@ -173,7 +173,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Alasan Tidak Mengikuti</label>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {REASONS.map((r, i) => (
-                <label key={i} className={`flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                <label key={i} className={`flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
                   selectedReason === r 
                     ? 'border-brand-500 bg-brand-50 text-brand-700 shadow-sm' 
                     : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'

@@ -106,8 +106,8 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
       )}
       
       {/* Program Management */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
           <div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight">Program Keagamaan</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">Jadwal kegiatan rutin sekolah</p>
@@ -122,21 +122,21 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
         
         <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full text-sm text-left text-slate-600">
-            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+            <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4">Nama Kegiatan</th>
-                <th className="px-6 py-4">Waktu Pelaksanaan</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Nama Kegiatan</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Waktu Pelaksanaan</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {programs.map(p => (
                 <tr key={p.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4 font-semibold text-slate-800">{p.name}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{p.time}</span>
+                  <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-slate-800">{p.name}</td>
+                  <td className="px-4 py-3 md:px-6 md:py-4">
+                    <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold text-[10px] md:text-xs border border-slate-200">{p.time}</span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-3 md:px-6 md:py-4 text-right">
                     <button onClick={() => setDeleteTarget({ type: 'program', id: p.id, name: p.name })} className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
                       <i className="fas fa-trash"></i>
                     </button>
@@ -149,8 +149,8 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
       </div>
 
       {/* Student Management */}
-      <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-4">
           <div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight">Data Siswa</h3>
             <p className="text-sm text-slate-500 font-medium mt-1">Basis data siswa terintegrasi</p>
@@ -171,21 +171,21 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
 
         <div className="overflow-x-auto max-h-[500px] rounded-2xl border border-slate-200 scrollbar-thin scrollbar-thumb-slate-200">
           <table className="w-full text-sm text-left text-slate-600">
-            <thead className="text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200 sticky top-0 z-10">
+            <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200 sticky top-0 z-10">
               <tr>
-                <th className="px-6 py-4">Nama Siswa</th>
-                <th className="px-6 py-4">Kelas</th>
-                <th className="px-6 py-4 text-right">Aksi</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Nama Siswa</th>
+                <th className="px-4 py-3 md:px-6 md:py-4">Kelas</th>
+                <th className="px-4 py-3 md:px-6 md:py-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {students.length > 0 ? students.map(s => (
                 <tr key={s.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4 font-semibold text-slate-800">{s.name}</td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">{s.class}</span>
+                  <td className="px-4 py-3 md:px-6 md:py-4 font-semibold text-slate-800">{s.name}</td>
+                  <td className="px-4 py-3 md:px-6 md:py-4">
+                    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 font-semibold text-[10px] md:text-xs border border-slate-200">{s.class}</span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-4 py-3 md:px-6 md:py-4 text-right">
                     <button onClick={() => setDeleteTarget({ type: 'student', id: s.id, name: s.name })} className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
                       <i className="fas fa-trash"></i>
                     </button>

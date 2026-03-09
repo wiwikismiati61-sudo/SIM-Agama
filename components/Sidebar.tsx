@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout, is
         onClick={() => setIsOpen(false)}
       ></div>
 
-      <aside className={`fixed lg:relative inset-y-0 left-0 w-72 bg-slate-950 text-slate-300 flex flex-col shadow-2xl z-20 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed lg:relative inset-y-0 left-0 w-64 lg:w-72 bg-slate-950 text-slate-300 flex flex-col shadow-2xl z-20 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 flex items-center space-x-4 border-b border-slate-800/50">
           <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/30">
             <i className="fas fa-mosque text-white text-xl"></i>
