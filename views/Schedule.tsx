@@ -208,21 +208,21 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
       {/* Add/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-6 flex items-center">
+          <div className="bg-white rounded-3xl p-5 md:p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight mb-4 md:mb-6 flex items-center">
               <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
                 <i className="fas fa-calendar-alt"></i>
               </div>
               {editingSchedule ? 'Edit Jadwal Kegiatan' : 'Tambah Jadwal Kegiatan Baru'}
             </h3>
-            <div className="space-y-5">
+            <div className="space-y-4 md:space-y-5">
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kegiatan</label>
+                    <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kegiatan</label>
                     <div className="flex flex-col sm:flex-row gap-3">
                         <select 
                             value={formData.activity} 
                             onChange={(e) => setFormData({...formData, activity: e.target.value})}
-                            className="flex-1 w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
+                            className="flex-1 w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
                         >
                             <option value="">-- Pilih Kegiatan --</option>
                             {ACTIVITIES.map(a => <option key={a} value={a}>{a}</option>)}
@@ -234,56 +234,56 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
                                 placeholder="Tulis nama kegiatan"
                                 value={otherActivity}
                                 onChange={(e) => setOtherActivity(e.target.value)}
-                                className="flex-1 w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
+                                className="flex-1 w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                             />
                         )}
                     </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hari</label>
-                        <select value={formData.day} onChange={(e) => setFormData({...formData, day: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
+                        <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Hari</label>
+                        <select value={formData.day} onChange={(e) => setFormData({...formData, day: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Hari --</option>
                             {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Minggu Ke</label>
-                        <select value={formData.week} onChange={(e) => setFormData({...formData, week: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
+                        <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Minggu Ke</label>
+                        <select value={formData.week} onChange={(e) => setFormData({...formData, week: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Minggu --</option>
                             {WEEKS.map(w => <option key={w} value={w}>{w}</option>)}
                         </select>
                     </div>
                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bulan</label>
-                        <select value={formData.month} onChange={(e) => setFormData({...formData, month: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
+                        <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bulan</label>
+                        <select value={formData.month} onChange={(e) => setFormData({...formData, month: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer">
                             <option value="">-- Pilih Bulan --</option>
                             {MONTHS.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tahun</label>
+                        <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tahun</label>
                         <input 
                             type="number"
                             placeholder="YYYY"
                             value={formData.year} 
                             onChange={(e) => setFormData({...formData, year: e.target.value})} 
-                            className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
+                            className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                         />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelas (cth: 7A, 8B, atau Semua Kelas)</label>
-                    <input type="text" value={formData.class} onChange={(e) => setFormData({...formData, class: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all" placeholder="Masukkan kelas..." />
+                    <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kelas (cth: 7A, 8B, atau Semua Kelas)</label>
+                    <input type="text" value={formData.class} onChange={(e) => setFormData({...formData, class: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all" placeholder="Masukkan kelas..." />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan (Opsional)</label>
-                    <textarea value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all resize-none" rows={2} placeholder="Tambahkan keterangan..."></textarea>
+                    <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan (Opsional)</label>
+                    <textarea value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all resize-none" rows={2} placeholder="Tambahkan keterangan..."></textarea>
                 </div>
             </div>
-            <div className="mt-8 flex gap-3">
-              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
-              <button onClick={handleSave} className="flex-1 px-4 py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Jadwal</button>
+            <div className="mt-6 md:mt-8 flex gap-3">
+              <button onClick={() => setIsModalOpen(false)} className="flex-1 px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+              <button onClick={handleSave} className="flex-1 px-4 py-2.5 md:py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Jadwal</button>
             </div>
           </div>
         </div>
@@ -292,8 +292,8 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
-            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-2xl md:text-3xl">
                 <i className="fas fa-trash-alt"></i>
             </div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Jadwal?</h3>
@@ -303,13 +303,13 @@ const ScheduleView: React.FC<ScheduleProps> = ({ schedules, setSchedules }) => {
             <div className="flex flex-col gap-3">
                 <button 
                 onClick={handleDelete}
-                className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
+                className="w-full py-3 md:py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
                 >
                 Ya, Hapus
                 </button>
                 <button 
                 onClick={() => setDeleteTarget(null)}
-                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
+                className="w-full py-3 md:py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
                 >
                 Batalkan
                 </button>

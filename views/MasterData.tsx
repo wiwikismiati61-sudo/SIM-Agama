@@ -210,38 +210,38 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
       {/* Add/Edit Modal Overlay */}
       {modalType && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-6 flex items-center">
+          <div className="bg-white rounded-3xl p-5 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight mb-4 md:mb-6 flex items-center">
               <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
                 <i className={`fas ${modalType === 'program' ? 'fa-calendar-plus' : 'fa-user-plus'}`}></i>
               </div>
               Tambah {modalType === 'program' ? 'Program' : 'Siswa'}
             </h3>
-            <div className="space-y-5">
+            <div className="space-y-4 md:space-y-5">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nama {modalType === 'program' ? 'Kegiatan' : 'Siswa'}</label>
+                <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Nama {modalType === 'program' ? 'Kegiatan' : 'Siswa'}</label>
                 <input 
                   type="text" 
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all"
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none text-sm md:text-base font-semibold text-slate-700 transition-all"
                   placeholder={`Masukkan nama ${modalType === 'program' ? 'kegiatan' : 'siswa'}...`}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{modalType === 'program' ? 'Waktu (contoh: 07:00)' : 'Kelas'}</label>
+                <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{modalType === 'program' ? 'Waktu (contoh: 07:00)' : 'Kelas'}</label>
                 <input 
                   type="text" 
                   value={formData.val}
                   onChange={(e) => setFormData({ ...formData, val: e.target.value })}
-                  className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none font-semibold text-slate-700 transition-all"
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white focus:outline-none text-sm md:text-base font-semibold text-slate-700 transition-all"
                   placeholder={`Masukkan ${modalType === 'program' ? 'waktu' : 'kelas'}...`}
                 />
               </div>
             </div>
-            <div className="mt-8 flex gap-3">
-              <button onClick={() => setModalType(null)} className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
-              <button onClick={saveForm} className="flex-1 px-4 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98]">Simpan</button>
+            <div className="mt-6 md:mt-8 flex gap-3">
+              <button onClick={() => setModalType(null)} className="flex-1 px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+              <button onClick={saveForm} className="flex-1 px-4 py-2.5 md:py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 transition-all active:scale-[0.98]">Simpan</button>
             </div>
           </div>
         </div>
@@ -250,8 +250,8 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
       {/* Delete Confirmation Modal */}
       {deleteTarget && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
-            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-2xl md:text-3xl">
               <i className="fas fa-trash-alt"></i>
             </div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Data?</h3>
@@ -263,13 +263,13 @@ const MasterView: React.FC<MasterProps> = ({ students, setStudents, programs, se
             <div className="flex flex-col gap-3">
               <button 
                 onClick={handleConfirmDelete}
-                className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
+                className="w-full py-3 md:py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
               >
                 Ya, Hapus
               </button>
               <button 
                 onClick={() => setDeleteTarget(null)}
-                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
+                className="w-full py-3 md:py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
               >
                 Batalkan
               </button>

@@ -400,9 +400,9 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
       {/* Edit Modal Overlay */}
       {editingId && editData && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold text-slate-800 tracking-tight flex items-center">
+          <div className="bg-white rounded-3xl p-5 md:p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="flex items-center justify-between mb-6 md:mb-8">
+              <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight flex items-center">
                 <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
                   <i className="fas fa-edit"></i>
                 </div>
@@ -413,53 +413,53 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
               </button>
             </div>
             
-            <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4 md:space-y-5">
+              <div className="grid grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal</label>
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal</label>
                   <input 
                     type="date"
                     value={editData.date}
                     onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-                    className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
+                    className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Jam</label>
+                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Jam</label>
                   <input 
                     type="time"
                     value={editData.time}
                     onChange={(e) => setEditData({ ...editData, time: e.target.value })}
-                    className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
+                    className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Siswa</label>
+                <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Siswa</label>
                 <input 
                   type="text" 
                   value={`${editData.studentName} (${editData.class})`}
                   disabled
-                  className="w-full bg-slate-100 border border-slate-200 px-4 py-3 rounded-xl font-semibold text-slate-400 cursor-not-allowed"
+                  className="w-full bg-slate-100 border border-slate-200 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-400 cursor-not-allowed"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alasan</label>
+                <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alasan</label>
                 <select 
                   value={editData.reason}
                   onChange={(e) => setEditData({ ...editData, reason: e.target.value })}
-                  className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
+                  className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
                 >
                   {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
             </div>
 
-            <div className="mt-8 flex gap-3">
-              <button onClick={() => setEditingId(null)} className="flex-1 px-4 py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
-              <button onClick={handleUpdate} className="flex-1 px-4 py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Perubahan</button>
+            <div className="mt-6 md:mt-8 flex gap-3">
+              <button onClick={() => setEditingId(null)} className="flex-1 px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
+              <button onClick={handleUpdate} className="flex-1 px-4 py-2.5 md:py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Perubahan</button>
             </div>
           </div>
         </div>
@@ -468,8 +468,8 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
-            <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-2xl md:text-3xl">
               <i className="fas fa-trash-alt"></i>
             </div>
             <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Data?</h3>
@@ -479,13 +479,13 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
             <div className="flex flex-col gap-3">
               <button 
                 onClick={() => confirmDelete(deleteConfirmId)} 
-                className="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
+                className="w-full py-3 md:py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
               >
                 Ya, Hapus Sekarang
               </button>
               <button 
                 onClick={() => setDeleteConfirmId(null)} 
-                className="w-full py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
+                className="w-full py-3 md:py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
               >
                 Tidak, Batalkan
               </button>
