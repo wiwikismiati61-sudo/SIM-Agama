@@ -9,8 +9,6 @@ interface SettingsProps {
 }
 
 const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }) => {
-  const [newU, setNewU] = useState('');
-  const [newP, setNewP] = useState('');
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
   const [confirmAction, setConfirmAction] = useState<{type: 'auth' | 'clear', title: string, desc: string} | null>(null);
 
@@ -19,25 +17,10 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
     setTimeout(() => setMessage(null), 3000);
   };
 
-  const handleUpdateAuth = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newU && newP) {
-      setConfirmAction({
-        type: 'auth',
-        title: 'Perbarui Kredensial?',
-        desc: 'Password akan diperbarui dan Anda akan diminta login ulang. Lanjutkan?'
-      });
-    } else {
-      showMessage('error', 'Username dan Password baru harus diisi!');
-    }
-  };
-
   const executeConfirmAction = () => {
     if (!confirmAction) return;
     
-    if (confirmAction.type === 'auth') {
-      onUpdateAuth({ user: newU, pass: newP });
-    } else if (confirmAction.type === 'clear') {
+    if (confirmAction.type === 'clear') {
       localStorage.clear();
       window.location.reload();
     }
@@ -95,46 +78,6 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
           <span>{message.text}</span>
         </div>
       )}
-      
-      {/* Auth Security */}
-      <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
-        <div className="flex items-center space-x-4 mb-6 md:mb-8">
-          <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 shadow-inner">
-            <i className="fas fa-shield-alt text-xl"></i>
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Keamanan Akun</h3>
-            <p className="text-sm text-slate-500 font-medium mt-0.5">Perbarui kredensial login administrator</p>
-          </div>
-        </div>
-        
-        <form onSubmit={handleUpdateAuth} className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Username Baru</label>
-            <input 
-              type="text" 
-              value={newU}
-              onChange={(e) => setNewU(e.target.value)}
-              className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none transition-all" 
-              placeholder="Masukkan username..."
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Password Baru</label>
-            <input 
-              type="text" 
-              value={newP}
-              onChange={(e) => setNewP(e.target.value)}
-              className="w-full border border-slate-200 bg-slate-50 px-4 py-3 rounded-xl font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none transition-all" 
-              placeholder="Masukkan password..."
-            />
-          </div>
-          <button type="submit" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-amber-500/30 active:scale-[0.98]">
-            Simpan Perubahan
-          </button>
-        </form>
-      </div>
 
       {/* Database Management */}
       <div className="bg-white p-4 md:p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden">

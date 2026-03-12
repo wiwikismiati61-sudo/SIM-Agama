@@ -56,16 +56,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout, is
             </button>
           ))}
         </nav>
-
-        <div className="p-6 border-t border-slate-800/50">
-          <button 
-            onClick={onLogout} 
-            className="w-full flex items-center justify-center space-x-2 bg-slate-900 hover:bg-red-500/10 text-slate-400 hover:text-red-500 py-3.5 rounded-xl transition-all font-medium text-sm border border-slate-800 hover:border-red-500/30"
-          >
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Keluar Sistem</span>
-          </button>
-        </div>
       </aside>
     </>
   );

@@ -8,16 +8,11 @@ import MasterView from './views/MasterData';
 import TransactionView from './views/Transaction';
 import ReportView from './views/Reports';
 import SettingsView from './views/Settings';
-import Login from './components/Login';
 import ScheduleView from './views/Schedule';
 
 const DEFAULT_AUTH: Auth = { user: 'admin', pass: 'admin123' };
 
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return sessionStorage.getItem('isLoggedIn') === 'true';
-  });
-
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
@@ -77,23 +72,8 @@ const App: React.FC = () => {
     }
   }, [students, programs, transactions, schedules, auth]);
 
-  const handleLogin = (u: string, p: string) => {
-    if (u === auth.user && p === auth.pass) {
-      sessionStorage.setItem('isLoggedIn', 'true');
-      setIsLoggedIn(true);
-      return true;
-    }
-    return false;
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
-  };
-
   const updateAuth = (newAuth: Auth) => {
     setAuth(newAuth);
-    handleLogout();
   };
 
   const restoreData = (data: any) => {
@@ -112,10 +92,6 @@ const App: React.FC = () => {
     if (data.auth) setAuth(data.auth);
   };
 
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
-  }
-
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
       <Sidebar 
@@ -124,7 +100,7 @@ const App: React.FC = () => {
           setCurrentView(view);
           setIsSidebarOpen(false); // Close sidebar on navigation
         }}
-        onLogout={handleLogout} 
+        onLogout={() => {}} 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
