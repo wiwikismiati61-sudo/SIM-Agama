@@ -30,13 +30,13 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
 
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
-  const classes = [...new Set(students.map(s => s.class))].sort();
+  const classes = [...new Set(students.map(s => String(s.class || "")))].sort();
   const filteredStudents = students.filter(s => s.class === selectedClass).sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const isProgramValid = selectedProgram && (selectedProgram !== 'Lainnya' || manualProgram.trim() !== '');
+    const isProgramValid = selectedProgram && (selectedProgram !== 'Lainnya' || String(manualProgram || "").trim() !== '');
 
     if (!selectedStudent || !selectedReason || !isProgramValid) {
       setMessage({type: 'error', text: 'Lengkapi semua data!'});
@@ -58,7 +58,7 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
       studentId: String(student.id),
       studentName: student.name,
       class: student.class,
-      program: selectedProgram === 'Lainnya' ? manualProgram.trim() : selectedProgram,
+      program: selectedProgram === 'Lainnya' ? String(manualProgram || "").trim() : String(selectedProgram || ""),
       reason: selectedReason
     };
 

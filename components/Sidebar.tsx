@@ -5,19 +5,21 @@ import { ViewType } from '../types';
 interface SidebarProps {
   currentView: ViewType;
   onNavigate: (view: ViewType) => void;
+  isLoggedIn: boolean;
+  onLoginClick: () => void;
   onLogout: () => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout, isOpen, setIsOpen }) => {
-  const menuItems: { id: ViewType; label: string; icon: string }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home' },
-    { id: 'master', label: 'Master Data', icon: 'fas fa-database' },
-    { id: 'transaksi', label: 'Input Absen', icon: 'fas fa-edit' },
-    { id: 'laporan', label: 'Laporan', icon: 'fas fa-file-excel' },
-    { id: 'jadwal', label: 'Jadwal Mingguan', icon: 'fas fa-calendar-week' },
-    { id: 'pengaturan', label: 'Pengaturan & DB', icon: 'fas fa-cogs' },
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen }) => {
+  const menuItems: { id: ViewType; label: string; icon: string; restricted: boolean }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home', restricted: true },
+    { id: 'master', label: 'Master Data', icon: 'fas fa-database', restricted: true },
+    { id: 'transaksi', label: 'Input Absen', icon: 'fas fa-edit', restricted: true },
+    { id: 'laporan', label: 'Laporan', icon: 'fas fa-file-excel', restricted: false },
+    { id: 'jadwal', label: 'Jadwal Mingguan', icon: 'fas fa-calendar-week', restricted: false },
+    { id: 'pengaturan', label: 'Pengaturan & DB', icon: 'fas fa-cogs', restricted: true },
   ];
 
   return (
@@ -52,10 +54,33 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, onLogout, is
               }`}
             >
               <i className={`${item.icon} w-5 text-center text-lg transition-transform ${currentView === item.id ? 'text-white' : 'text-slate-500 group-hover:text-brand-500'}`}></i>
-              <span className="font-medium text-sm">{item.label}</span>
+              <span className="flex-1 font-medium text-sm text-left">{item.label}</span>
+              {item.restricted && !isLoggedIn && (
+                <i className="fas fa-lock text-[10px] text-slate-600"></i>
+              )}
             </button>
           ))}
         </nav>
+
+        <div className="p-4 border-t border-slate-800/50">
+          {isLoggedIn ? (
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all duration-200"
+            >
+              <i className="fas fa-sign-out-alt w-5 text-center"></i>
+              <span className="font-bold text-sm">Keluar Sistem</span>
+            </button>
+          ) : (
+            <button
+              onClick={onLoginClick}
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-brand-400 hover:bg-brand-500/10 hover:text-brand-300 transition-all duration-200"
+            >
+              <i className="fas fa-sign-in-alt w-5 text-center"></i>
+              <span className="font-bold text-sm">Masuk Sistem</span>
+            </button>
+          )}
+        </div>
       </aside>
     </>
   );

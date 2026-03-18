@@ -55,14 +55,14 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
   const [filterProgramCol, setFilterProgramCol] = useState('');
   const [filterReasonCol, setFilterReasonCol] = useState('');
 
-  const classes = [...new Set(students.map(s => s.class))].sort();
+  const classes = [...new Set(students.map(s => String(s.class || "")))].sort();
 
   // Unique values for automatic column filters
-  const uniqueDates = Array.from<string>(new Set(transactions.map(t => t.date))).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-  const uniqueStudents = Array.from<string>(new Set(transactions.map(t => t.studentName))).sort();
-  const uniqueClasses = Array.from<string>(new Set(transactions.map(t => t.class))).sort();
-  const uniquePrograms = Array.from<string>(new Set(transactions.map(t => t.program))).sort();
-  const uniqueReasons = Array.from<string>(new Set(transactions.map(t => t.reason))).sort();
+  const uniqueDates = Array.from<string>(new Set(transactions.map(t => String(t.date || "")))).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const uniqueStudents = Array.from<string>(new Set(transactions.map(t => String(t.studentName || "")))).sort();
+  const uniqueClasses = Array.from<string>(new Set(transactions.map(t => String(t.class || "")))).sort();
+  const uniquePrograms = Array.from<string>(new Set(transactions.map(t => String(t.program || "")))).sort();
+  const uniqueReasons = Array.from<string>(new Set(transactions.map(t => String(t.reason || "")))).sort();
 
   const duplicateKeys = new Set<string>();
   const seenKeys = new Set<string>();
@@ -89,7 +89,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
     } else if (filterType === 'weekly') {
       dateMatch = t.date >= filterWeekStart && t.date <= filterWeekEnd;
     } else {
-      dateMatch = !filterMonth || t.date.startsWith(filterMonth);
+      dateMatch = !filterMonth || String(t.date || "").startsWith(filterMonth);
     }
     
     const colDateMatch = !filterDateCol || t.date === filterDateCol;

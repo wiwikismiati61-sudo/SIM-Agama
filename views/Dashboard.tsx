@@ -24,6 +24,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
   })();
   const totalStudents = students.length;
   const absentsToday = transactions.filter(t => t.date === today).length;
+  const totalAbsences = transactions.length;
   const earlyDepartures = transactions.filter(t => t.reason === 'Pulang sebelum waktunya').length;
 
   // Logic: Panggilan Orang Tua (> 2 kali pelanggaran)
@@ -44,13 +45,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
     const sholatByDate: Record<string, string[]> = {};
     
     txs.forEach(t => {
-      const lower = t.program.toLowerCase();
+      const programName = t.program || "";
+      const lower = String(programName).toLowerCase();
       const isSholat = lower.includes('dhuha') || lower.includes('dzuhur') || lower.includes('dhuhur');
       
       if (isSholat) {
         if (!sholatByDate[t.date]) sholatByDate[t.date] = [];
-        if (!sholatByDate[t.date].includes(t.program)) {
-          sholatByDate[t.date].push(t.program);
+        if (!sholatByDate[t.date].includes(String(t.program || ""))) {
+          sholatByDate[t.date].push(String(t.program || ""));
         }
       } else {
         count++;
@@ -118,8 +120,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
 
   const stats = [
     { label: 'Total Siswa Terdata', value: totalStudents, icon: 'fas fa-users', color: 'brand' },
-    { label: 'Ketidakhadiran Hari Ini', value: absentsToday, icon: 'fas fa-calendar-day', color: 'indigo' },
-    { label: 'Pulang Sebelum Waktu', value: earlyDepartures, icon: 'fas fa-clock', color: 'rose' },
+    { label: 'Total Ketidakhadiran', value: totalAbsences, icon: 'fas fa-calendar-check', color: 'indigo' },
     { label: 'Perlu Panggilan Ortu', value: parentCallList.length, icon: 'fas fa-phone-alt', color: 'amber' },
     { label: 'Screening Kesehatan', value: healthMonitoringList.length, icon: 'fas fa-notes-medical', color: 'rose' },
   ];
@@ -139,13 +140,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
 
   const programCounts: Record<string, number> = {};
   transactions.forEach(t => {
-    if (!programCounts[t.program]) programCounts[t.program] = 0;
-    programCounts[t.program]++;
+    const prog = t.program || "Tidak Diketahui";
+    if (!programCounts[prog]) programCounts[prog] = 0;
+    programCounts[prog]++;
   });
   
   const programData = Object.keys(programCounts).map(key => ({
-    name: key.length > 15 ? key.substring(0, 15) + '...' : key,
-    fullName: key,
+    name: String(key).length > 15 ? String(key).substring(0, 15) + '...' : String(key),
+    fullName: String(key),
     jumlah: programCounts[key]
   })).sort((a, b) => b.jumlah - a.jumlah).slice(0, 5); // Top 5
 
@@ -164,14 +166,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
 
   students.forEach(s => {
     // Ambil karakter pertama dari kelas (misal: "7A" -> "7")
-    const grade = s.class.charAt(0);
+    const grade = String(s.class || "").charAt(0);
     if (classGroups.includes(grade)) {
       studentsByGrade[grade].push({
         ...s,
         absences: studentViolations[s.id]?.count || 0
       });
-      if (!subClassesByGrade[grade].includes(s.class)) {
-        subClassesByGrade[grade].push(s.class);
+      if (!subClassesByGrade[grade].includes(String(s.class || ""))) {
+        subClassesByGrade[grade].push(String(s.class || ""));
       }
     }
   });
@@ -188,7 +190,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
   return (
     <div className="animate-in fade-in duration-500 space-y-8">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((s, i) => (
           <div key={i} className={`p-4 md:p-5 rounded-2xl shadow-sm border border-slate-200 border-l-4 ${colorClasses[s.color].border} ${colorClasses[s.color].bg} transition-all hover:shadow-md hover:-translate-y-1`}>
             <div className="flex justify-between items-start">
@@ -317,10 +319,10 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
           <span className="bg-rose-500 text-white text-[10px] md:text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider inline-block text-center shadow-sm">Perhatian Khusus</span>
         </div>
         
-        <div className="p-0 overflow-x-auto">
+        <div className="p-0 overflow-x-auto max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
           {parentCallList.length > 0 ? (
             <table className="w-full text-sm text-left text-slate-600">
-              <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
+              <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200 sticky top-0 z-10">
                 <tr>
                   <th className="px-4 py-3 md:px-6 md:py-4">Nama Siswa</th>
                   <th className="px-4 py-3 md:px-6 md:py-4">Kelas</th>
@@ -477,7 +479,7 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
                         axisLine={false} 
                         tickLine={false} 
                         tick={{ fill: '#64748b', fontSize: 10 }} 
-                        tickFormatter={(name) => name.split(' ')[0]}
+                        tickFormatter={(name) => String(name || "").split(' ')[0]}
                         angle={-45}
                         textAnchor="end"
                         height={60}

@@ -1,0 +1,181 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: students
+    // Document ID: studentId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required, < 100 chars)
+    //   - class: string (required, < 50 chars)
+    //
+    // Collection: programs
+    // Document ID: programId
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required, < 100 chars)
+    //   - time: string (required, < 50 chars)
+    //
+    // Collection: transactions
+    // Document ID: transactionId
+    // Fields:
+    //   - id: string (required)
+    //   - date: string (required)
+    //   - time: string (required)
+    //   - studentId: string (required)
+    //   - studentName: string (required)
+    //   - class: string (required)
+    //   - program: string (required)
+    //   - reason: string (required)
+    //
+    // Collection: schedules
+    // Document ID: scheduleId
+    // Fields:
+    //   - id: string (required)
+    //   - activity: string (required, < 200 chars)
+    //   - day: string (required)
+    //   - week: string (required)
+    //   - month: string (required)
+    //   - year: string (required)
+    //   - class: string (required)
+    //   - notes: string (optional, < 500 chars)
+    //
+    // Collection: auth
+    // Document ID: config
+    // Fields:
+    //   - user: string (required)
+    //   - pass: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        ((request.auth.token.email == "wiwikismiati61@guru.smp.belajar.id" && request.auth.token.email_verified == true) ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidString(field, maxLen) {
+      return request.resource.data[field] is string && request.resource.data[field].size() <= maxLen;
+    }
+
+    function isValidOptionalString(field, maxLen) {
+      return !(field in request.resource.data) || (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidStudent(data) {
+      return hasRequiredFields(['id', 'name', 'class']) &&
+             hasOnlyAllowedFields(['id', 'name', 'class']) &&
+             isValidString('id', 50) &&
+             isValidString('name', 100) &&
+             isValidString('class', 50);
+    }
+
+    function isValidProgram(data) {
+      return hasRequiredFields(['id', 'name', 'time']) &&
+             hasOnlyAllowedFields(['id', 'name', 'time']) &&
+             isValidString('id', 50) &&
+             isValidString('name', 100) &&
+             isValidString('time', 50);
+    }
+
+    function isValidTransaction(data) {
+      return hasRequiredFields(['id', 'date', 'time', 'studentId', 'studentName', 'class', 'program', 'reason']) &&
+             hasOnlyAllowedFields(['id', 'date', 'time', 'studentId', 'studentName', 'class', 'program', 'reason']) &&
+             isValidString('id', 50) &&
+             isValidString('date', 50) &&
+             isValidString('time', 50) &&
+             isValidString('studentId', 50) &&
+             isValidString('studentName', 100) &&
+             isValidString('class', 50) &&
+             isValidString('program', 100) &&
+             isValidString('reason', 500);
+    }
+
+    function isValidSchedule(data) {
+      return hasRequiredFields(['id', 'activity', 'day', 'week', 'month', 'year', 'class']) &&
+             hasOnlyAllowedFields(['id', 'activity', 'day', 'week', 'month', 'year', 'class', 'notes']) &&
+             isValidString('id', 50) &&
+             isValidString('activity', 200) &&
+             isValidString('day', 20) &&
+             isValidString('week', 50) &&
+             isValidString('month', 50) &&
+             isValidString('year', 10) &&
+             isValidString('class', 50) &&
+             isValidOptionalString('notes', 500);
+    }
+
+    function isValidAuth(data) {
+      return hasRequiredFields(['user', 'pass']) &&
+             hasOnlyAllowedFields(['user', 'pass']) &&
+             isValidString('user', 50) &&
+             isValidString('pass', 50);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /students/{studentId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidStudent(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /programs/{programId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidProgram(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidTransaction(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /schedules/{scheduleId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidSchedule(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /auth/config {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidAuth(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}

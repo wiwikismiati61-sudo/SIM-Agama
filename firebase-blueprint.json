@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Information about a student",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "class": { "type": "string" }
+      },
+      "required": ["id", "name", "class"]
+    },
+    "Program": {
+      "title": "Program",
+      "description": "Information about a religious program",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "time": { "type": "string" }
+      },
+      "required": ["id", "name", "time"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Attendance record for a student in a program",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "class": { "type": "string" },
+        "program": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "required": ["id", "date", "time", "studentId", "studentName", "class", "program", "reason"]
+    },
+    "Schedule": {
+      "title": "Schedule",
+      "description": "Weekly activity schedule",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "activity": { "type": "string" },
+        "day": { "type": "string" },
+        "week": { "type": "string" },
+        "month": { "type": "string" },
+        "year": { "type": "string" },
+        "class": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "activity", "day", "week", "month", "year", "class"]
+    },
+    "Auth": {
+      "title": "Auth",
+      "description": "Authentication credentials",
+      "type": "object",
+      "properties": {
+        "user": { "type": "string" },
+        "pass": { "type": "string" }
+      },
+      "required": ["user", "pass"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Student records"
+    },
+    "/programs/{programId}": {
+      "schema": "Program",
+      "description": "Program records"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Attendance transactions"
+    },
+    "/schedules/{scheduleId}": {
+      "schema": "Schedule",
+      "description": "Weekly activity schedules"
+    },
+    "/auth/config": {
+      "schema": "Auth",
+      "description": "Admin authentication configuration"
+    }
+  }
+}

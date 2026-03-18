@@ -4,11 +4,12 @@ import { Auth } from '../types';
 
 interface SettingsProps {
   onUpdateAuth: (newAuth: Auth) => void;
-  onRestore: (data: any) => void;
+  onRestore: (data: any) => Promise<void>;
   data: any;
+  isFirebaseLoggedIn: boolean;
 }
 
-const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }) => {
+const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data, isFirebaseLoggedIn }) => {
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
   const [confirmAction, setConfirmAction] = useState<{type: 'auth' | 'clear', title: string, desc: string} | null>(null);
 
@@ -21,6 +22,11 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
     if (!confirmAction) return;
     
     if (confirmAction.type === 'clear') {
+      if (!isFirebaseLoggedIn) {
+        showMessage('error', 'Anda harus login dengan Google untuk menghapus data di server.');
+        setConfirmAction(null);
+        return;
+      }
       localStorage.clear();
       window.location.reload();
     }
@@ -39,23 +45,29 @@ const SettingsView: React.FC<SettingsProps> = ({ onUpdateAuth, onRestore, data }
     alert('Data backup berhasil diunduh!');
   };
 
-  const handleRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isFirebaseLoggedIn) {
+      showMessage('error', 'Anda harus login dengan Google untuk memulihkan data ke server.');
+      e.target.value = '';
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const json = JSON.parse(evt.target?.result as string);
         if (json.students && json.transactions) {
-          onRestore(json);
-          showMessage('success', 'Data restore berhasil diunduh dan dipulihkan!');
-          alert('Data restore berhasil diunduh dan dipulihkan!');
+          await onRestore(json);
+          showMessage('success', 'Data restore berhasil dipulihkan!');
+          alert('Data restore berhasil dipulihkan!');
         } else {
           showMessage('error', 'Format file tidak valid. Pastikan file backup berasal dari aplikasi ini.');
         }
       } catch (err) {
-        showMessage('error', 'Gagal memproses file. File mungkin rusak.');
+        showMessage('error', 'Gagal memproses file atau izin ditolak.');
       }
     };
     reader.readAsText(file);

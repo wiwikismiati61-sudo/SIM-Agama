@@ -9,98 +9,424 @@ import TransactionView from './views/Transaction';
 import ReportView from './views/Reports';
 import SettingsView from './views/Settings';
 import ScheduleView from './views/Schedule';
+import { db, auth as firebaseAuth, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, orderBy, googleProvider, signInWithPopup, handleFirestoreError, OperationType } from './firebase';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
 const DEFAULT_AUTH: Auth = { user: 'admin', pass: 'admin123' };
 
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+  const [loginForm, setLoginForm] = useState({ user: '', pass: '' });
 
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   
   // App State
-  const [auth, setAuth] = useState<Auth>(() => {
-    const saved = localStorage.getItem('sim_auth');
-    return saved ? JSON.parse(saved) : DEFAULT_AUTH;
-  });
+  const [auth, setAuth] = useState<Auth>(DEFAULT_AUTH);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
-  const [students, setStudents] = useState<Student[]>(() => {
-    const saved = localStorage.getItem('sim_db');
-    return saved ? (JSON.parse(saved).students || []) : [];
-  });
-
-  const [programs, setPrograms] = useState<Program[]>(() => {
-    const saved = localStorage.getItem('sim_db');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.programs && parsed.programs.length > 0) return parsed.programs;
-    }
-    return [
-      { id: '1', name: 'Sholat Dhuha', time: '07:00' },
-      { id: '2', name: 'Sholat Dzuhur', time: '12:00' },
-      { id: '3', name: 'Jumat Beramal', time: 'Jumat 07:00' }
-    ];
-  });
-
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem('sim_db');
-    return saved ? (JSON.parse(saved).transactions || []) : [];
-  });
-
-  const [schedules, setSchedules] = useState<Schedule[]>(() => {
-    const saved = localStorage.getItem('sim_db');
-    if (saved) {
-      const db = JSON.parse(saved);
-      const schedulesFromDb = db.schedules || [];
-      // Backward compatibility for schedules without a 'month' or 'year' field
-      return schedulesFromDb.map((s: any) => ({ 
-        ...s, 
-        month: s.month || 'Setiap Bulan',
-        year: s.year || new Date().getFullYear().toString() 
-      }));
-    }
-    return [];
-  });
-
-  // Persistance
+  // Firebase Auth Sync
   useEffect(() => {
-    try {
-      const db = { students, programs, transactions, schedules };
-      localStorage.setItem('sim_db', JSON.stringify(db));
-      localStorage.setItem('sim_auth', JSON.stringify(auth));
-    } catch (error) {
-      console.error('Failed to save to localStorage', error);
-    }
-  }, [students, programs, transactions, schedules, auth]);
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+      setCurrentUser(user);
+      if (user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const updateAuth = (newAuth: Auth) => {
-    setAuth(newAuth);
-  };
+  // Firebase Data Sync
+  useEffect(() => {
+    const unsubStudents = onSnapshot(collection(db, 'students'), (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as Student);
+      setStudents(data);
+    });
 
-  const restoreData = (data: any) => {
-    if (data.students) setStudents(data.students);
-    if (data.programs) setPrograms(data.programs);
-    if (data.transactions) setTransactions(data.transactions);
-    if (data.schedules) {
-      // Backward compatibility for restored schedules
-      const restoredSchedules = data.schedules.map((s: any) => ({ 
-        ...s, 
+    const unsubPrograms = onSnapshot(collection(db, 'programs'), (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as Program);
+      setPrograms(data.length > 0 ? data : [
+        { id: '1', name: 'Sholat Dhuha', time: '07:00' },
+        { id: '2', name: 'Sholat Dzuhur', time: '12:00' },
+        { id: '3', name: 'Jumat Beramal', time: 'Jumat 07:00' }
+      ]);
+    });
+
+    const unsubTransactions = onSnapshot(collection(db, 'transactions'), (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as Transaction);
+      setTransactions(data);
+    });
+
+    const unsubSchedules = onSnapshot(collection(db, 'schedules'), (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as Schedule);
+      setSchedules(data.map(s => ({
+        ...s,
         month: s.month || 'Setiap Bulan',
         year: s.year || new Date().getFullYear().toString()
-      }));
-      setSchedules(restoredSchedules);
+      })));
+    });
+
+    const unsubAuth = onSnapshot(doc(db, 'auth', 'config'), (docSnap) => {
+      if (docSnap.exists()) {
+        setAuth(docSnap.data() as Auth);
+      }
+    });
+
+    setIsDataLoaded(true);
+
+    return () => {
+      unsubStudents();
+      unsubPrograms();
+      unsubTransactions();
+      unsubSchedules();
+      unsubAuth();
+    };
+  }, []);
+
+  // Migration from localStorage to Firebase
+  useEffect(() => {
+    const migrateData = async () => {
+      const migrationFlag = localStorage.getItem('sim_firebase_migrated');
+      if (migrationFlag) return;
+
+      // Only migrate if the admin is logged in
+      if (currentUser?.email !== 'wiwikismiati61@guru.smp.belajar.id') {
+        return;
+      }
+
+      console.log('Starting migration to Firebase...');
+      const savedDb = localStorage.getItem('sim_db');
+      const savedAuth = localStorage.getItem('sim_auth');
+
+      try {
+        if (savedDb) {
+          const { students: localStudents, programs: localPrograms, transactions: localTransactions, schedules: localSchedules } = JSON.parse(savedDb);
+          
+          if (localStudents) {
+            for (const s of localStudents) {
+              if (s.id) {
+                const sanitized = {
+                  id: String(s.id),
+                  name: String(s.name || ''),
+                  class: String(s.class || '')
+                };
+                await setDoc(doc(db, 'students', sanitized.id), sanitized);
+              }
+            }
+          }
+          if (localPrograms) {
+            for (const p of localPrograms) {
+              if (p.id) {
+                const sanitized = {
+                  id: String(p.id),
+                  name: String(p.name || ''),
+                  time: String(p.time || '')
+                };
+                await setDoc(doc(db, 'programs', sanitized.id), sanitized);
+              }
+            }
+          }
+          if (localTransactions) {
+            for (const t of localTransactions) {
+              if (t.id) {
+                const sanitized = {
+                  id: String(t.id),
+                  date: String(t.date || ''),
+                  time: String(t.time || ''),
+                  studentId: String(t.studentId || ''),
+                  studentName: String(t.studentName || ''),
+                  class: String(t.class || ''),
+                  program: String(t.program || ''),
+                  reason: String(t.reason || '')
+                };
+                await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
+              }
+            }
+          }
+          if (localSchedules) {
+            for (const s of localSchedules) {
+              if (s.id) {
+                const sanitized = {
+                  id: String(s.id),
+                  activity: String(s.activity || ''),
+                  day: String(s.day || ''),
+                  week: String(s.week || ''),
+                  month: String(s.month || ''),
+                  year: String(s.year || ''),
+                  class: String(s.class || ''),
+                  notes: String(s.notes || '')
+                };
+                await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
+              }
+            }
+          }
+        }
+
+        if (savedAuth) {
+          const authData = JSON.parse(savedAuth);
+          const sanitizedAuth = {
+            user: String(authData.user || 'admin'),
+            pass: String(authData.pass || 'admin123')
+          };
+          await setDoc(doc(db, 'auth', 'config'), sanitizedAuth);
+        } else {
+          await setDoc(doc(db, 'auth', 'config'), DEFAULT_AUTH);
+        }
+
+        localStorage.setItem('sim_firebase_migrated', 'true');
+        console.log('Migration to Firebase completed.');
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, 'migration');
+      }
+    };
+
+    if (isDataLoaded && isLoggedIn) {
+      migrateData();
     }
-    if (data.auth) setAuth(data.auth);
+  }, [isDataLoaded, isLoggedIn, currentUser]);
+
+  const updateAuth = async (newAuth: Auth) => {
+    try {
+      await setDoc(doc(db, 'auth', 'config'), newAuth);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'auth/config');
+    }
   };
+
+  const handleAddTransaction = async (t: Transaction) => {
+    try {
+      if (!t.id) throw new Error('Transaction ID is missing');
+      await setDoc(doc(db, 'transactions', String(t.id)), t);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `transactions/${t.id}`);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    try {
+      if (!id) throw new Error('Transaction ID is missing');
+      await deleteDoc(doc(db, 'transactions', String(id)));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `transactions/${id}`);
+    }
+  };
+
+  const handleUpdateTransaction = async (updated: Transaction) => {
+    try {
+      if (!updated.id) throw new Error('Transaction ID is missing');
+      await setDoc(doc(db, 'transactions', String(updated.id)), updated);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `transactions/${updated.id}`);
+    }
+  };
+
+  const handleSetStudents = async (newStudents: Student[] | ((prev: Student[]) => Student[])) => {
+    const updatedStudents = typeof newStudents === 'function' ? newStudents(students) : newStudents;
+    const currentIds = students.map(s => s.id);
+    const newIds = updatedStudents.map(s => s.id);
+
+    try {
+      // Added or Updated
+      for (const s of updatedStudents) {
+        if (s.id) await setDoc(doc(db, 'students', String(s.id)), s);
+      }
+
+      // Deleted
+      const deletedIds = currentIds.filter(id => !newIds.includes(id));
+      for (const id of deletedIds) {
+        if (id) await deleteDoc(doc(db, 'students', String(id)));
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'students');
+    }
+  };
+
+  const handleSetPrograms = async (newPrograms: Program[] | ((prev: Program[]) => Program[])) => {
+    const updatedPrograms = typeof newPrograms === 'function' ? newPrograms(programs) : newPrograms;
+    const currentIds = programs.map(p => p.id);
+    const newIds = updatedPrograms.map(p => p.id);
+
+    try {
+      for (const p of updatedPrograms) {
+        if (p.id) await setDoc(doc(db, 'programs', String(p.id)), p);
+      }
+
+      const deletedIds = currentIds.filter(id => !newIds.includes(id));
+      for (const id of deletedIds) {
+        if (id) await deleteDoc(doc(db, 'programs', String(id)));
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'programs');
+    }
+  };
+
+  const handleSetSchedules = async (newSchedules: Schedule[] | ((prev: Schedule[]) => Schedule[])) => {
+    const updatedSchedules = typeof newSchedules === 'function' ? newSchedules(schedules) : newSchedules;
+    const currentIds = schedules.map(s => s.id);
+    const newIds = updatedSchedules.map(s => s.id);
+
+    try {
+      for (const s of updatedSchedules) {
+        if (s.id) await setDoc(doc(db, 'schedules', String(s.id)), s);
+      }
+
+      const deletedIds = currentIds.filter(id => !newIds.includes(id));
+      for (const id of deletedIds) {
+        if (id) await deleteDoc(doc(db, 'schedules', String(id)));
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'schedules');
+    }
+  };
+
+  const restoreData = async (data: any) => {
+    if (!firebaseAuth.currentUser) {
+      alert('Anda harus login dengan Google untuk memulihkan data ke server.');
+      return;
+    }
+
+    try {
+      if (data.students) {
+        for (const s of data.students) {
+          if (s.id) {
+            const sanitized = {
+              id: String(s.id),
+              name: String(s.name || ''),
+              class: String(s.class || '')
+            };
+            await setDoc(doc(db, 'students', sanitized.id), sanitized);
+          }
+        }
+      }
+      if (data.programs) {
+        for (const p of data.programs) {
+          if (p.id) {
+            const sanitized = {
+              id: String(p.id),
+              name: String(p.name || ''),
+              time: String(p.time || '')
+            };
+            await setDoc(doc(db, 'programs', sanitized.id), sanitized);
+          }
+        }
+      }
+      if (data.transactions) {
+        for (const t of data.transactions) {
+          if (t.id) {
+            const sanitized = {
+              id: String(t.id),
+              date: String(t.date || ''),
+              time: String(t.time || ''),
+              studentId: String(t.studentId || ''),
+              studentName: String(t.studentName || ''),
+              class: String(t.class || ''),
+              program: String(t.program || ''),
+              reason: String(t.reason || '')
+            };
+            await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
+          }
+        }
+      }
+      if (data.schedules) {
+        for (const s of data.schedules) {
+          if (s.id) {
+            const sanitized = {
+              id: String(s.id),
+              activity: String(s.activity || ''),
+              day: String(s.day || ''),
+              week: String(s.week || ''),
+              month: String(s.month || ''),
+              year: String(s.year || ''),
+              class: String(s.class || ''),
+              notes: String(s.notes || '')
+            };
+            await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
+          }
+        }
+      }
+      if (data.auth) {
+        const sanitizedAuth = {
+          user: String(data.auth.user || 'admin'),
+          pass: String(data.auth.pass || 'admin123')
+        };
+        await setDoc(doc(db, 'auth', 'config'), sanitizedAuth);
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'restore');
+    }
+  };
+
+  const handleLogin = async () => {
+    // Custom login check (optional, but keep it for legacy if needed)
+    if (loginForm.user === auth.user && loginForm.pass === auth.pass) {
+      // Note: This doesn't authenticate with Firebase Auth, so writes will still fail
+      // unless the user also signs in with Google.
+      // We'll prompt them to sign in with Google if they want to save data.
+      alert('Login lokal berhasil, silakan login dengan Google untuk izin simpan data.');
+      setIsLoggedIn(true);
+      setShowLoginModal(false);
+      setLoginForm({ user: '', pass: '' });
+    } else {
+      alert('Username atau Password salah!');
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithPopup(firebaseAuth, googleProvider);
+      setShowLoginModal(false);
+    } catch (error) {
+      console.error('Login Error:', error);
+      alert('Gagal login dengan Google');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(firebaseAuth);
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error('Logout Error:', error);
+    }
+  };
+
+  const handleNavigate = (view: ViewType) => {
+    const restrictedViews: ViewType[] = ['dashboard', 'master', 'transaksi', 'pengaturan'];
+    
+    if (restrictedViews.includes(view) && !isLoggedIn) {
+      setShowLoginModal(true);
+      // Optionally stay on current view or go to a public one
+      return;
+    }
+    
+    setCurrentView(view);
+    setIsSidebarOpen(false);
+  };
+
+  // Redirect to a public view if logged out while on a restricted view
+  useEffect(() => {
+    const restrictedViews: ViewType[] = ['dashboard', 'master', 'transaksi', 'pengaturan'];
+    if (!isLoggedIn && restrictedViews.includes(currentView)) {
+      setCurrentView('laporan');
+    }
+  }, [isLoggedIn, currentView]);
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
       <Sidebar 
         currentView={currentView} 
-        onNavigate={(view) => {
-          setCurrentView(view);
-          setIsSidebarOpen(false); // Close sidebar on navigation
-        }}
-        onLogout={() => {}} 
+        onNavigate={handleNavigate}
+        isLoggedIn={isLoggedIn}
+        onLoginClick={() => setShowLoginModal(true)}
+        onLogout={handleLogout} 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
@@ -119,31 +445,40 @@ const App: React.FC = () => {
             {currentView === 'master' && (
               <MasterView 
                 students={students || []} 
-                setStudents={setStudents} 
+                setStudents={handleSetStudents} 
                 programs={programs || []} 
-                setPrograms={setPrograms} 
+                setPrograms={handleSetPrograms} 
               />
             )}
             {currentView === 'transaksi' && (
               <TransactionView 
                 students={students || []} 
                 programs={programs || []} 
-                onAddTransaction={(t) => setTransactions(prev => [t, ...(Array.isArray(prev) ? prev : [])])} 
+                onAddTransaction={handleAddTransaction} 
               />
             )}
             {currentView === 'laporan' && (
               <ReportView 
                 students={students || []} 
                 transactions={transactions || []} 
-                onDeleteTransaction={(id) => setTransactions(prev => (prev || []).filter(t => t.id !== id))}
-                onDeleteMultipleTransactions={(ids) => setTransactions(prev => (prev || []).filter(t => !ids.includes(t.id)))}
-                onUpdateTransaction={(updated) => setTransactions(prev => (prev || []).map(t => t.id === updated.id ? updated : t))}
+                onDeleteTransaction={handleDeleteTransaction}
+                onDeleteMultipleTransactions={async (ids) => {
+                  try {
+                    for (const id of ids) {
+                      if (id) await deleteDoc(doc(db, 'transactions', String(id)));
+                    }
+                  } catch (error) {
+                    handleFirestoreError(error, OperationType.DELETE, 'transactions');
+                  }
+                }}
+                onUpdateTransaction={handleUpdateTransaction}
               />
             )}
             {currentView === 'jadwal' && (
               <ScheduleView 
                 schedules={schedules || []}
-                setSchedules={setSchedules}
+                setSchedules={handleSetSchedules}
+                isLoggedIn={isLoggedIn}
               />
             )}
             {currentView === 'pengaturan' && (
@@ -151,11 +486,94 @@ const App: React.FC = () => {
                 onUpdateAuth={updateAuth} 
                 onRestore={restoreData}
                 data={{ students, programs, transactions, schedules, auth }}
+                isFirebaseLoggedIn={!!currentUser}
               />
             )}
           </div>
         </div>
       </main>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-brand-500 to-brand-700 rounded-3xl flex items-center justify-center shadow-xl shadow-brand-500/30 mx-auto mb-6">
+                <i className="fas fa-lock text-white text-3xl"></i>
+              </div>
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight">Login Administrator</h2>
+              <p className="text-slate-500 font-medium mt-2">Masukkan kredensial untuk akses penuh</p>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Username</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+                    <i className="fas fa-user"></i>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Username"
+                    value={loginForm.user}
+                    onChange={(e) => setLoginForm({...loginForm, user: e.target.value})}
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:outline-none transition-all font-semibold text-slate-700"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Password</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
+                    <i className="fas fa-key"></i>
+                  </div>
+                  <input 
+                    type="password" 
+                    placeholder="••••••••"
+                    value={loginForm.pass}
+                    onChange={(e) => setLoginForm({...loginForm, pass: e.target.value})}
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:outline-none transition-all font-semibold text-slate-700"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3">
+              <button 
+                onClick={handleGoogleLogin}
+                className="w-full py-4 bg-white border-2 border-slate-200 hover:border-brand-500 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3 group"
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+                <span>Masuk dengan Google</span>
+              </button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-slate-400 font-bold">Atau Login Lokal</span>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleLogin}
+                className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center space-x-2"
+              >
+                <span>Masuk Lokal</span>
+                <i className="fas fa-arrow-right text-sm"></i>
+              </button>
+              <button 
+                onClick={() => setShowLoginModal(false)}
+                className="w-full py-4 text-slate-500 hover:text-slate-800 font-bold transition-all"
+              >
+                Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
