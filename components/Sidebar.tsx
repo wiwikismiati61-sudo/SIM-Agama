@@ -5,6 +5,7 @@ import { ViewType } from '../types';
 interface SidebarProps {
   currentView: ViewType;
   onNavigate: (view: ViewType) => void;
+  isAdmin: boolean;
   isLoggedIn: boolean;
   onLoginClick: () => void;
   onLogout: () => void;
@@ -12,9 +13,9 @@ interface SidebarProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen }) => {
   const menuItems: { id: ViewType; label: string; icon: string; restricted: boolean }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home', restricted: true },
+    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home', restricted: false },
     { id: 'master', label: 'Master Data', icon: 'fas fa-database', restricted: true },
     { id: 'transaksi', label: 'Input Absen', icon: 'fas fa-edit', restricted: true },
     { id: 'laporan', label: 'Laporan', icon: 'fas fa-file-excel', restricted: false },
@@ -55,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isLoggedIn, 
             >
               <i className={`${item.icon} w-5 text-center text-lg transition-transform ${currentView === item.id ? 'text-white' : 'text-slate-500 group-hover:text-brand-500'}`}></i>
               <span className="flex-1 font-medium text-sm text-left">{item.label}</span>
-              {item.restricted && !isLoggedIn && (
+              {item.restricted && !isAdmin && (
                 <i className="fas fa-lock text-[10px] text-slate-600"></i>
               )}
             </button>

@@ -140,32 +140,27 @@ service cloud.firestore {
 
     match /students/{studentId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidStudent(request.resource.data);
-      allow delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /programs/{programId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidProgram(request.resource.data);
-      allow delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /transactions/{transactionId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidTransaction(request.resource.data);
-      allow delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /schedules/{scheduleId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidSchedule(request.resource.data);
-      allow delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /auth/config {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidAuth(request.resource.data);
-      allow delete: if isAdmin();
+      allow write: if isAdmin();
     }
     
     match /users/{userId} {

@@ -108,45 +108,52 @@ const App: React.FC = () => {
 
       try {
         if (savedDb) {
-          const { students: localStudents, programs: localPrograms, transactions: localTransactions, schedules: localSchedules } = JSON.parse(savedDb);
+          const parsedDb = JSON.parse(savedDb);
+          const { students: localStudents, programs: localPrograms, transactions: localTransactions, schedules: localSchedules } = parsedDb;
           
-          if (localStudents) {
+          if (Array.isArray(localStudents)) {
+            console.log(`Migrating ${localStudents.length} students...`);
             for (const s of localStudents) {
-              if (s.id) {
+              const studentId = String(s.id || '').trim();
+              if (studentId) {
                 const sanitized = {
-                  id: String(s.id),
+                  id: studentId,
                   name: String(s.name || ''),
                   class: String(s.class || '')
                 };
                 try {
                   await setDoc(doc(db, 'students', sanitized.id), sanitized);
                 } catch (e) {
-                  handleFirestoreError(e, OperationType.WRITE, 'migration/students');
+                  handleFirestoreError(e, OperationType.WRITE, `migration/students/${sanitized.id}`);
                 }
               }
             }
           }
-          if (localPrograms) {
+          if (Array.isArray(localPrograms)) {
+            console.log(`Migrating ${localPrograms.length} programs...`);
             for (const p of localPrograms) {
-              if (p.id) {
+              const programId = String(p.id || '').trim();
+              if (programId) {
                 const sanitized = {
-                  id: String(p.id),
+                  id: programId,
                   name: String(p.name || ''),
                   time: String(p.time || '')
                 };
                 try {
                   await setDoc(doc(db, 'programs', sanitized.id), sanitized);
                 } catch (e) {
-                  handleFirestoreError(e, OperationType.WRITE, 'migration/programs');
+                  handleFirestoreError(e, OperationType.WRITE, `migration/programs/${sanitized.id}`);
                 }
               }
             }
           }
-          if (localTransactions) {
+          if (Array.isArray(localTransactions)) {
+            console.log(`Migrating ${localTransactions.length} transactions...`);
             for (const t of localTransactions) {
-              if (t.id) {
+              const transactionId = String(t.id || '').trim();
+              if (transactionId) {
                 const sanitized = {
-                  id: String(t.id),
+                  id: transactionId,
                   date: String(t.date || ''),
                   time: String(t.time || ''),
                   studentId: String(t.studentId || ''),
@@ -158,16 +165,18 @@ const App: React.FC = () => {
                 try {
                   await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
                 } catch (e) {
-                  handleFirestoreError(e, OperationType.WRITE, 'migration/transactions');
+                  handleFirestoreError(e, OperationType.WRITE, `migration/transactions/${sanitized.id}`);
                 }
               }
             }
           }
-          if (localSchedules) {
+          if (Array.isArray(localSchedules)) {
+            console.log(`Migrating ${localSchedules.length} schedules...`);
             for (const s of localSchedules) {
-              if (s.id) {
+              const scheduleId = String(s.id || '').trim();
+              if (scheduleId) {
                 const sanitized = {
-                  id: String(s.id),
+                  id: scheduleId,
                   activity: String(s.activity || ''),
                   day: String(s.day || ''),
                   week: String(s.week || ''),
@@ -179,7 +188,7 @@ const App: React.FC = () => {
                 try {
                   await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
                 } catch (e) {
-                  handleFirestoreError(e, OperationType.WRITE, 'migration/schedules');
+                  handleFirestoreError(e, OperationType.WRITE, `migration/schedules/${sanitized.id}`);
                 }
               }
             }
@@ -422,12 +431,13 @@ const App: React.FC = () => {
     }
   };
 
+  const isAdmin = currentUser?.email === 'wiwikismiati61@guru.smp.belajar.id';
+
   const handleNavigate = (view: ViewType) => {
-    const restrictedViews: ViewType[] = ['dashboard', 'master', 'transaksi', 'pengaturan'];
+    const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan'];
     
-    if (restrictedViews.includes(view) && !isLoggedIn) {
+    if (restrictedViews.includes(view) && !isAdmin) {
       setShowLoginModal(true);
-      // Optionally stay on current view or go to a public one
       return;
     }
     
@@ -437,17 +447,18 @@ const App: React.FC = () => {
 
   // Redirect to a public view if logged out while on a restricted view
   useEffect(() => {
-    const restrictedViews: ViewType[] = ['dashboard', 'master', 'transaksi', 'pengaturan'];
-    if (!isLoggedIn && restrictedViews.includes(currentView)) {
-      setCurrentView('laporan');
+    const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan'];
+    if (!isAdmin && restrictedViews.includes(currentView)) {
+      setCurrentView('dashboard');
     }
-  }, [isLoggedIn, currentView]);
+  }, [isAdmin, currentView]);
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
       <Sidebar 
         currentView={currentView} 
         onNavigate={handleNavigate}
+        isAdmin={isAdmin}
         isLoggedIn={isLoggedIn}
         onLoginClick={() => setShowLoginModal(true)}
         onLogout={handleLogout} 
