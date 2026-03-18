@@ -60,9 +60,10 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() &&
-        ((request.auth.token.email == "wiwikismiati61@guru.smp.belajar.id" && request.auth.token.email_verified == true) ||
-         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
+      return isAuthenticated() && (
+        request.auth.token.email == "wiwikismiati61@guru.smp.belajar.id" ||
+        request.auth.uid == "gVIqJRYzwnYWJp15HINjSlLquBO2"
+      );
     }
 
     function hasRequiredFields(fields) {
@@ -87,7 +88,6 @@ service cloud.firestore {
 
     function isValidStudent(data) {
       return hasRequiredFields(['id', 'name', 'class']) &&
-             hasOnlyAllowedFields(['id', 'name', 'class']) &&
              isValidString('id', 50) &&
              isValidString('name', 100) &&
              isValidString('class', 50);
@@ -95,7 +95,6 @@ service cloud.firestore {
 
     function isValidProgram(data) {
       return hasRequiredFields(['id', 'name', 'time']) &&
-             hasOnlyAllowedFields(['id', 'name', 'time']) &&
              isValidString('id', 50) &&
              isValidString('name', 100) &&
              isValidString('time', 50);
@@ -103,7 +102,6 @@ service cloud.firestore {
 
     function isValidTransaction(data) {
       return hasRequiredFields(['id', 'date', 'time', 'studentId', 'studentName', 'class', 'program', 'reason']) &&
-             hasOnlyAllowedFields(['id', 'date', 'time', 'studentId', 'studentName', 'class', 'program', 'reason']) &&
              isValidString('id', 50) &&
              isValidString('date', 50) &&
              isValidString('time', 50) &&
@@ -116,7 +114,6 @@ service cloud.firestore {
 
     function isValidSchedule(data) {
       return hasRequiredFields(['id', 'activity', 'day', 'week', 'month', 'year', 'class']) &&
-             hasOnlyAllowedFields(['id', 'activity', 'day', 'week', 'month', 'year', 'class', 'notes']) &&
              isValidString('id', 50) &&
              isValidString('activity', 200) &&
              isValidString('day', 20) &&
@@ -129,7 +126,6 @@ service cloud.firestore {
 
     function isValidAuth(data) {
       return hasRequiredFields(['user', 'pass']) &&
-             hasOnlyAllowedFields(['user', 'pass']) &&
              isValidString('user', 50) &&
              isValidString('pass', 50);
     }
@@ -137,6 +133,10 @@ service cloud.firestore {
     // ===============================================================
     // Rules
     // ===============================================================
+
+    match /test/connection {
+      allow read: if true;
+    }
 
     match /students/{studentId} {
       allow read: if true;

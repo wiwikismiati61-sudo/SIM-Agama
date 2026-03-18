@@ -118,7 +118,11 @@ const App: React.FC = () => {
                   name: String(s.name || ''),
                   class: String(s.class || '')
                 };
-                await setDoc(doc(db, 'students', sanitized.id), sanitized);
+                try {
+                  await setDoc(doc(db, 'students', sanitized.id), sanitized);
+                } catch (e) {
+                  handleFirestoreError(e, OperationType.WRITE, 'migration/students');
+                }
               }
             }
           }
@@ -130,7 +134,11 @@ const App: React.FC = () => {
                   name: String(p.name || ''),
                   time: String(p.time || '')
                 };
-                await setDoc(doc(db, 'programs', sanitized.id), sanitized);
+                try {
+                  await setDoc(doc(db, 'programs', sanitized.id), sanitized);
+                } catch (e) {
+                  handleFirestoreError(e, OperationType.WRITE, 'migration/programs');
+                }
               }
             }
           }
@@ -147,7 +155,11 @@ const App: React.FC = () => {
                   program: String(t.program || ''),
                   reason: String(t.reason || '')
                 };
-                await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
+                try {
+                  await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
+                } catch (e) {
+                  handleFirestoreError(e, OperationType.WRITE, 'migration/transactions');
+                }
               }
             }
           }
@@ -164,7 +176,11 @@ const App: React.FC = () => {
                   class: String(s.class || ''),
                   notes: String(s.notes || '')
                 };
-                await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
+                try {
+                  await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
+                } catch (e) {
+                  handleFirestoreError(e, OperationType.WRITE, 'migration/schedules');
+                }
               }
             }
           }
@@ -176,15 +192,23 @@ const App: React.FC = () => {
             user: String(authData.user || 'admin'),
             pass: String(authData.pass || 'admin123')
           };
-          await setDoc(doc(db, 'auth', 'config'), sanitizedAuth);
+          try {
+            await setDoc(doc(db, 'auth', 'config'), sanitizedAuth);
+          } catch (e) {
+            handleFirestoreError(e, OperationType.WRITE, 'migration/auth');
+          }
         } else {
-          await setDoc(doc(db, 'auth', 'config'), DEFAULT_AUTH);
+          try {
+            await setDoc(doc(db, 'auth', 'config'), DEFAULT_AUTH);
+          } catch (e) {
+            handleFirestoreError(e, OperationType.WRITE, 'migration/auth-default');
+          }
         }
 
         localStorage.setItem('sim_firebase_migrated', 'true');
         console.log('Migration to Firebase completed.');
       } catch (error) {
-        handleFirestoreError(error, OperationType.WRITE, 'migration');
+        console.error('Migration failed:', error);
       }
     };
 
