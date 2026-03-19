@@ -261,6 +261,16 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDeleteMultipleTransactions = async (ids: string[]) => {
+    try {
+      for (const id of ids) {
+        if (id) await deleteDoc(doc(db, 'transactions', String(id)));
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'transactions');
+    }
+  };
+
   const handleSetStudents = async (newStudents: Student[] | ((prev: Student[]) => Student[])) => {
     const updatedStudents = typeof newStudents === 'function' ? newStudents(students) : newStudents;
     const currentIds = students.map(s => s.id);
@@ -489,24 +499,17 @@ const App: React.FC = () => {
               <TransactionView 
                 students={students || []} 
                 programs={programs || []} 
+                transactions={transactions || []}
                 onAddTransaction={handleAddTransaction} 
+                onDeleteTransaction={handleDeleteTransaction}
+                onUpdateTransaction={handleUpdateTransaction}
+                onDeleteMultipleTransactions={handleDeleteMultipleTransactions}
               />
             )}
             {currentView === 'laporan' && (
               <ReportView 
                 students={students || []} 
                 transactions={transactions || []} 
-                onDeleteTransaction={handleDeleteTransaction}
-                onDeleteMultipleTransactions={async (ids) => {
-                  try {
-                    for (const id of ids) {
-                      if (id) await deleteDoc(doc(db, 'transactions', String(id)));
-                    }
-                  } catch (error) {
-                    handleFirestoreError(error, OperationType.DELETE, 'transactions');
-                  }
-                }}
-                onUpdateTransaction={handleUpdateTransaction}
               />
             )}
             {currentView === 'jadwal' && (

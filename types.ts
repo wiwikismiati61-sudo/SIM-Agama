@@ -20,6 +20,7 @@ export interface Transaction {
   class: string;
   program: string;
   reason: string;
+  note?: string;
 }
 
 export interface Schedule {
@@ -40,4 +41,4 @@ export interface Auth {
 
 export type ViewType = 'dashboard' | 'master' | 'transaksi' | 'laporan' | 'jadwal' | 'pengaturan';
 
-export const REASONS = ['Alpha', 'Haid', 'Sakit', 'Ijin', 'Pulang sebelum waktunya'];
+export const REASONS = ['Hadir', 'Izin', 'Sakit', 'Alpha', 'Haid', 'Pulang sebelum waktunya'];

@@ -6,12 +6,9 @@ import * as XLSX from 'xlsx';
 interface ReportProps {
   students: Student[];
   transactions: Transaction[];
-  onDeleteTransaction: (id: string) => void;
-  onUpdateTransaction: (updated: Transaction) => void;
-  onDeleteMultipleTransactions?: (ids: string[]) => void;
 }
 
-const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTransaction, onUpdateTransaction, onDeleteMultipleTransactions }) => {
+const ReportView: React.FC<ReportProps> = ({ students, transactions }) => {
   const [filterClass, setFilterClass] = useState('all');
   const [filterType, setFilterType] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [filterDate, setFilterDate] = useState(() => {
@@ -44,9 +41,6 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
     return `${year}-${month}`;
   });
   const [showDoubleOnly, setShowDoubleOnly] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<Transaction | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Column filters
   const [filterDateCol, setFilterDateCol] = useState('');
@@ -111,51 +105,6 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
     const filename = `Laporan_Absensi_${periodStr}.xlsx`;
     const wb = XLSX.utils.table_to_book(table, { sheet: "Laporan" });
     XLSX.writeFile(wb, filename);
-  };
-
-  const startEdit = (t: Transaction) => {
-    setEditingId(t.id);
-    setEditData({ ...t });
-  };
-
-  const handleUpdate = () => {
-    if (editData) {
-      onUpdateTransaction(editData);
-      setEditingId(null);
-      setEditData(null);
-    }
-  };
-
-  const confirmDelete = (id: string) => {
-    onDeleteTransaction(id);
-    setDeleteConfirmId(null);
-  };
-
-  const handleCleanDuplicates = () => {
-    const seen = new Set<string>();
-    const idsToDelete: string[] = [];
-    
-    // Iterate from oldest to newest if we want to keep the first one.
-    // Assuming transactions are sorted newest first, we can iterate backwards or just keep the first one we see (newest).
-    // Let's keep the first one we see in the array (newest).
-    transactions.forEach(t => {
-      const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
-      if (seen.has(key)) {
-        idsToDelete.push(t.id);
-      } else {
-        seen.add(key);
-      }
-    });
-
-    if (idsToDelete.length > 0) {
-      if (window.confirm(`Ditemukan ${idsToDelete.length} data ganda. Apakah Anda yakin ingin menghapus data ganda tersebut dan menyisakan satu data saja?`)) {
-        if (onDeleteMultipleTransactions) {
-           onDeleteMultipleTransactions(idsToDelete);
-        }
-      }
-    } else {
-      alert('Tidak ada data ganda yang ditemukan.');
-    }
   };
 
   return (
@@ -233,13 +182,6 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
               >
                 <i className={`fas fa-copy mr-2 ${showDoubleOnly ? 'text-amber-600' : 'text-slate-400'}`}></i>
                 Data Ganda
-              </button>
-              <button 
-                onClick={handleCleanDuplicates}
-                className="h-[46px] bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center active:scale-[0.98]"
-                title="Hapus data ganda dan sisakan satu data saja"
-              >
-                <i className="fas fa-broom mr-2"></i>Bersihkan Ganda
               </button>
               <button 
                 onClick={downloadExcel}
@@ -332,7 +274,6 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                     </select>
                   </div>
                 </th>
-                <th className="px-4 py-3 md:px-6 md:py-4 text-center align-top">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -365,26 +306,10 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
                       {t.reason}
                     </span>
                   </td>
-                  <td className="px-4 py-3 md:px-6 md:py-4 text-center whitespace-nowrap">
-                    <button 
-                      onClick={() => startEdit(t)} 
-                      className="w-8 h-8 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 mr-2 transition-colors"
-                      title="Edit Data"
-                    >
-                      <i className="fas fa-edit"></i>
-                    </button>
-                    <button 
-                      onClick={() => setDeleteConfirmId(t.id)} 
-                      className="w-8 h-8 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                      title="Hapus Data"
-                    >
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </td>
                 </tr>
               )}) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-slate-400 font-medium">
+                  <td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-medium">
                     <div className="flex flex-col items-center justify-center space-y-3">
                       <i className="far fa-folder-open text-4xl text-slate-300"></i>
                       <p>Tidak ada data untuk periode ini.</p>
@@ -396,103 +321,6 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions, onDeleteTra
           </table>
         </div>
       </div>
-
-      {/* Edit Modal Overlay */}
-      {editingId && editData && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-5 md:p-8 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-100">
-            <div className="flex items-center justify-between mb-6 md:mb-8">
-              <h3 className="text-lg md:text-xl font-bold text-slate-800 tracking-tight flex items-center">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mr-3">
-                  <i className="fas fa-edit"></i>
-                </div>
-                Edit Data Absensi
-              </h3>
-              <button onClick={() => setEditingId(null)} className="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors">
-                <i className="fas fa-times text-lg"></i>
-              </button>
-            </div>
-            
-            <div className="space-y-4 md:space-y-5">
-              <div className="grid grid-cols-2 gap-3 md:gap-4">
-                <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tanggal</label>
-                  <input 
-                    type="date"
-                    value={editData.date}
-                    onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-                    className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Jam</label>
-                  <input 
-                    type="time"
-                    value={editData.time}
-                    onChange={(e) => setEditData({ ...editData, time: e.target.value })}
-                    className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Siswa</label>
-                <input 
-                  type="text" 
-                  value={`${editData.studentName} (${editData.class})`}
-                  disabled
-                  className="w-full bg-slate-100 border border-slate-200 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-400 cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alasan</label>
-                <select 
-                  value={editData.reason}
-                  onChange={(e) => setEditData({ ...editData, reason: e.target.value })}
-                  className="w-full border border-slate-200 bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold text-slate-700 focus:bg-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:outline-none transition-all cursor-pointer"
-                >
-                  {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <div className="mt-6 md:mt-8 flex gap-3">
-              <button onClick={() => setEditingId(null)} className="flex-1 px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all">Batal</button>
-              <button onClick={handleUpdate} className="flex-1 px-4 py-2.5 md:py-3 bg-brand-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-500/30 hover:bg-brand-700 transition-all active:scale-[0.98]">Simpan Perubahan</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200 text-center border border-slate-100">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 md:mb-6 text-2xl md:text-3xl">
-              <i className="fas fa-trash-alt"></i>
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 tracking-tight mb-2">Hapus Data?</h3>
-            <p className="text-slate-500 text-sm font-medium mb-8">
-              Apakah Anda benar-benar ingin menghapus data absensi ini? Tindakan ini tidak dapat dibatalkan.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button 
-                onClick={() => confirmDelete(deleteConfirmId)} 
-                className="w-full py-3 md:py-3.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-500/30 active:scale-[0.98]"
-              >
-                Ya, Hapus Sekarang
-              </button>
-              <button 
-                onClick={() => setDeleteConfirmId(null)} 
-                className="w-full py-3 md:py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-bold transition-all"
-              >
-                Tidak, Batalkan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

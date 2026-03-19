@@ -1,14 +1,27 @@
 
 import React, { useState, useEffect } from 'react';
 import { Student, Program, Transaction, REASONS } from '../types';
+import { Edit2, Trash2, X } from 'lucide-react';
 
 interface TransactionProps {
   students: Student[];
   programs: Program[];
+  transactions: Transaction[];
   onAddTransaction: (t: Transaction) => void;
+  onDeleteTransaction: (id: string) => void;
+  onUpdateTransaction: (updated: Transaction) => void;
+  onDeleteMultipleTransactions?: (ids: string[]) => void;
 }
 
-const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAddTransaction }) => {
+const TransactionView: React.FC<TransactionProps> = ({ 
+  students, 
+  programs, 
+  transactions, 
+  onAddTransaction,
+  onDeleteTransaction,
+  onUpdateTransaction,
+  onDeleteMultipleTransactions
+}) => {
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
   const [selectedProgram, setSelectedProgram] = useState('');
@@ -30,8 +43,55 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
 
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
+  // Table State
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Transaction | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [showDoubleOnly, setShowDoubleOnly] = useState(false);
+
+  // Column filters
+  const [filterDateCol, setFilterDateCol] = useState('');
+  const [filterStudentCol, setFilterStudentCol] = useState('');
+  const [filterClassCol, setFilterClassCol] = useState('');
+  const [filterProgramCol, setFilterProgramCol] = useState('');
+  const [filterReasonCol, setFilterReasonCol] = useState('');
+
   const classes = [...new Set(students.map(s => String(s.class || "")))].sort();
   const filteredStudents = students.filter(s => s.class === selectedClass).sort((a, b) => a.name.localeCompare(b.name));
+
+  // Unique values for automatic column filters
+  const uniqueDates = Array.from<string>(new Set(transactions.map(t => String(t.date || "")))).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+  const uniqueStudents = Array.from<string>(new Set(transactions.map(t => String(t.studentName || "")))).sort();
+  const uniqueClasses = Array.from<string>(new Set(transactions.map(t => String(t.class || "")))).sort();
+  const uniquePrograms = Array.from<string>(new Set(transactions.map(t => String(t.program || "")))).sort();
+  const uniqueReasons = Array.from<string>(new Set(transactions.map(t => String(t.reason || "")))).sort();
+
+  const duplicateKeys = new Set<string>();
+  const seenKeys = new Set<string>();
+  
+  transactions.forEach(t => {
+    const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
+    if (seenKeys.has(key)) {
+      duplicateKeys.add(key);
+    } else {
+      seenKeys.add(key);
+    }
+  });
+
+  const filtered = transactions.filter(t => {
+    if (showDoubleOnly) {
+      const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
+      if (!duplicateKeys.has(key)) return false;
+    }
+
+    const colDateMatch = !filterDateCol || t.date === filterDateCol;
+    const colStudentMatch = !filterStudentCol || t.studentName === filterStudentCol;
+    const colClassMatch = !filterClassCol || t.class === filterClassCol;
+    const colProgramMatch = !filterProgramCol || t.program === filterProgramCol;
+    const colReasonMatch = !filterReasonCol || t.reason === filterReasonCol;
+
+    return colDateMatch && colStudentMatch && colClassMatch && colProgramMatch && colReasonMatch;
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,6 +261,291 @@ const TransactionView: React.FC<TransactionProps> = ({ students, programs, onAdd
             </button>
           </div>
         </form>
+
+      {/* Transaction Table */}
+      <div className="bg-white rounded-2xl shadow-sm border border-black/5 overflow-hidden mt-8">
+        <div className="p-6 border-b border-black/5 flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-xl font-semibold text-gray-900">Recent Transactions</h2>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={showDoubleOnly} 
+                onChange={e => setShowDoubleOnly(e.target.checked)}
+                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              />
+              Show Duplicates Only
+            </label>
+            {showDoubleOnly && duplicateKeys.size > 0 && onDeleteMultipleTransactions && (
+              <button
+                onClick={() => {
+                  const toDelete: string[] = [];
+                  const keysSeen = new Set<string>();
+                  transactions.forEach(t => {
+                    const key = `${t.studentId}-${t.date}-${t.time}-${t.program}`;
+                    if (duplicateKeys.has(key)) {
+                      if (keysSeen.has(key)) {
+                        toDelete.push(t.id!);
+                      } else {
+                        keysSeen.add(key);
+                      }
+                    }
+                  });
+                  if (confirm(`Delete ${toDelete.length} duplicate entries?`)) {
+                    onDeleteMultipleTransactions(toDelete);
+                  }
+                }}
+                className="px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-lg hover:bg-red-100 transition-colors"
+              >
+                Clean Duplicates
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50">
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-black/5">
+                  <div className="flex flex-col gap-2">
+                    <span>Date</span>
+                    <select 
+                      value={filterDateCol} 
+                      onChange={e => setFilterDateCol(e.target.value)}
+                      className="text-[10px] font-normal normal-case p-1 border rounded bg-white"
+                    >
+                      <option value="">All</option>
+                      {uniqueDates.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-black/5">
+                  <div className="flex flex-col gap-2">
+                    <span>Student</span>
+                    <select 
+                      value={filterStudentCol} 
+                      onChange={e => setFilterStudentCol(e.target.value)}
+                      className="text-[10px] font-normal normal-case p-1 border rounded bg-white"
+                    >
+                      <option value="">All</option>
+                      {uniqueStudents.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                </th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-black/5">
+                  <div className="flex flex-col gap-2">
+                    <span>Class</span>
+                    <select 
+                      value={filterClassCol} 
+                      onChange={e => setFilterClassCol(e.target.value)}
+                      className="text-[10px] font-normal normal-case p-1 border rounded bg-white"
+                    >
+                      <option value="">All</option>
+                      {uniqueClasses.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-black/5">
+                  <div className="flex flex-col gap-2">
+                    <span>Program</span>
+                    <select 
+                      value={filterProgramCol} 
+                      onChange={e => setFilterProgramCol(e.target.value)}
+                      className="text-[10px] font-normal normal-case p-1 border rounded bg-white"
+                    >
+                      <option value="">All</option>
+                      {uniquePrograms.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                </th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-black/5">
+                  <div className="flex flex-col gap-2">
+                    <span>Reason</span>
+                    <select 
+                      value={filterReasonCol} 
+                      onChange={e => setFilterReasonCol(e.target.value)}
+                      className="text-[10px] font-normal normal-case p-1 border rounded bg-white"
+                    >
+                      <option value="">All</option>
+                      {uniqueReasons.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                </th>
+                <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-black/5">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/5">
+              {filtered.map((t) => (
+                <tr key={t.id} className={`hover:bg-gray-50/50 transition-colors ${duplicateKeys.has(`${t.studentId}-${t.date}-${t.time}-${t.program}`) ? 'bg-red-50/30' : ''}`}>
+                  <td className="p-4 text-sm text-gray-600">{t.date}</td>
+                  <td className="p-4 text-sm font-medium text-gray-900">{t.studentName}</td>
+                  <td className="p-4 text-sm text-gray-600">{t.class}</td>
+                  <td className="p-4 text-sm text-gray-600">{t.program}</td>
+                  <td className="p-4">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      t.reason === 'Hadir' ? 'bg-emerald-50 text-emerald-700' :
+                      t.reason === 'Izin' ? 'bg-blue-50 text-blue-700' :
+                      t.reason === 'Sakit' ? 'bg-amber-50 text-amber-700' :
+                      'bg-rose-50 text-rose-700'
+                    }`}>
+                      {t.reason}
+                    </span>
+                  </td>
+                  <td className="p-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingId(t.id!);
+                          setEditData({...t});
+                        }}
+                        className="p-1 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                        title="Edit"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirmId(t.id!)}
+                        className="p-1 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-gray-500 italic">
+                    No transactions found matching filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {editingId && editData && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+            <div className="p-6 border-b border-black/5 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Edit Transaction</h3>
+              <button onClick={() => setEditingId(null)} className="text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
+                <input 
+                  type="text" 
+                  value={editData.studentName} 
+                  disabled 
+                  className="w-full px-4 py-2 bg-gray-50 border border-black/10 rounded-xl text-gray-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <input 
+                    type="date" 
+                    value={editData.date} 
+                    onChange={e => setEditData({...editData, date: e.target.value})}
+                    className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                  <input 
+                    type="time" 
+                    value={editData.time} 
+                    onChange={e => setEditData({...editData, time: e.target.value})}
+                    className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Program</label>
+                <select 
+                  value={editData.program} 
+                  onChange={e => setEditData({...editData, program: e.target.value})}
+                  className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  {programs.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                <select 
+                  value={editData.reason} 
+                  onChange={e => setEditData({...editData, reason: e.target.value})}
+                  className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  {REASONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                <textarea 
+                  value={editData.note || ''} 
+                  onChange={e => setEditData({...editData, note: e.target.value})}
+                  className="w-full px-4 py-2 border border-black/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none h-20"
+                />
+              </div>
+            </div>
+            <div className="p-6 bg-gray-50 flex justify-end gap-3">
+              <button 
+                onClick={() => setEditingId(null)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  onUpdateTransaction(editData);
+                  setEditingId(null);
+                }}
+                className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this transaction? This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-4 py-2 border border-black/10 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  onDeleteTransaction(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                }}
+                className="flex-1 px-4 py-2 bg-rose-600 text-white font-semibold rounded-xl hover:bg-rose-700 transition-colors shadow-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
