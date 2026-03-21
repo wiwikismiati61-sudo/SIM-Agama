@@ -66,25 +66,25 @@
     }
   },
   "firestore": {
-    "/students/{studentId}": {
+    "/users/{userId}/students/{studentId}": {
       "schema": "Student",
-      "description": "Student records"
+      "description": "Student records for a specific user"
     },
-    "/programs/{programId}": {
+    "/users/{userId}/programs/{programId}": {
       "schema": "Program",
-      "description": "Program records"
+      "description": "Program records for a specific user"
     },
-    "/transactions/{transactionId}": {
+    "/users/{userId}/transactions/{transactionId}": {
       "schema": "Transaction",
-      "description": "Attendance transactions"
+      "description": "Attendance transactions for a specific user"
     },
-    "/schedules/{scheduleId}": {
+    "/users/{userId}/schedules/{scheduleId}": {
       "schema": "Schedule",
-      "description": "Weekly activity schedules"
+      "description": "Weekly activity schedules for a specific user"
     },
-    "/auth/config": {
+    "/users/{userId}/auth/config": {
       "schema": "Auth",
-      "description": "Admin authentication configuration"
+      "description": "Authentication configuration for a specific user"
     }
   }
 }

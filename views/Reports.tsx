@@ -193,7 +193,7 @@ const ReportView: React.FC<ReportProps> = ({ students, transactions }) => {
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+        <div className="overflow-x-auto max-h-[400px] overflow-y-auto rounded-2xl border border-slate-200">
           <table className="w-full text-sm text-left text-slate-600" id="reportTable">
             <thead className="text-[10px] md:text-xs text-slate-500 uppercase font-semibold bg-slate-50/80 border-b border-slate-200">
               <tr>

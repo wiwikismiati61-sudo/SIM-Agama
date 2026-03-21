@@ -46,12 +46,22 @@ const App: React.FC = () => {
 
   // Firebase Data Sync
   useEffect(() => {
-    const unsubStudents = onSnapshot(collection(db, 'students'), (snapshot) => {
+    if (!currentUser) {
+      setStudents([]);
+      setPrograms([]);
+      setTransactions([]);
+      setSchedules([]);
+      return;
+    }
+
+    const userPath = `users/${currentUser.uid}`;
+
+    const unsubStudents = onSnapshot(collection(db, userPath, 'students'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Student);
       setStudents(data);
     });
 
-    const unsubPrograms = onSnapshot(collection(db, 'programs'), (snapshot) => {
+    const unsubPrograms = onSnapshot(collection(db, userPath, 'programs'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Program);
       setPrograms(data.length > 0 ? data : [
         { id: '1', name: 'Sholat Dhuha', time: '07:00' },
@@ -60,12 +70,12 @@ const App: React.FC = () => {
       ]);
     });
 
-    const unsubTransactions = onSnapshot(collection(db, 'transactions'), (snapshot) => {
+    const unsubTransactions = onSnapshot(collection(db, userPath, 'transactions'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Transaction);
       setTransactions(data);
     });
 
-    const unsubSchedules = onSnapshot(collection(db, 'schedules'), (snapshot) => {
+    const unsubSchedules = onSnapshot(collection(db, userPath, 'schedules'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Schedule);
       setSchedules(data.map(s => ({
         ...s,
@@ -74,7 +84,7 @@ const App: React.FC = () => {
       })));
     });
 
-    const unsubAuth = onSnapshot(doc(db, 'auth', 'config'), (docSnap) => {
+    const unsubAuth = onSnapshot(doc(db, userPath, 'auth', 'config'), (docSnap) => {
       if (docSnap.exists()) {
         setAuth(docSnap.data() as Auth);
       }
@@ -89,7 +99,7 @@ const App: React.FC = () => {
       unsubSchedules();
       unsubAuth();
     };
-  }, []);
+  }, [currentUser]);
 
   // Migration from localStorage to Firebase
   useEffect(() => {
@@ -227,44 +237,49 @@ const App: React.FC = () => {
   }, [isDataLoaded, isLoggedIn, currentUser]);
 
   const updateAuth = async (newAuth: Auth) => {
+    if (!currentUser) return;
     try {
-      await setDoc(doc(db, 'auth', 'config'), newAuth);
+      await setDoc(doc(db, `users/${currentUser.uid}/auth`, 'config'), newAuth);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'auth/config');
     }
   };
 
   const handleAddTransaction = async (t: Transaction) => {
+    if (!currentUser) return;
     try {
       if (!t.id) throw new Error('Transaction ID is missing');
-      await setDoc(doc(db, 'transactions', String(t.id)), t);
+      await setDoc(doc(db, `users/${currentUser.uid}/transactions`, String(t.id)), t);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `transactions/${t.id}`);
     }
   };
 
   const handleDeleteTransaction = async (id: string) => {
+    if (!currentUser) return;
     try {
       if (!id) throw new Error('Transaction ID is missing');
-      await deleteDoc(doc(db, 'transactions', String(id)));
+      await deleteDoc(doc(db, `users/${currentUser.uid}/transactions`, String(id)));
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, `transactions/${id}`);
     }
   };
 
   const handleUpdateTransaction = async (updated: Transaction) => {
+    if (!currentUser) return;
     try {
       if (!updated.id) throw new Error('Transaction ID is missing');
-      await setDoc(doc(db, 'transactions', String(updated.id)), updated);
+      await setDoc(doc(db, `users/${currentUser.uid}/transactions`, String(updated.id)), updated);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `transactions/${updated.id}`);
     }
   };
 
   const handleDeleteMultipleTransactions = async (ids: string[]) => {
+    if (!currentUser) return;
     try {
       for (const id of ids) {
-        if (id) await deleteDoc(doc(db, 'transactions', String(id)));
+        if (id) await deleteDoc(doc(db, `users/${currentUser.uid}/transactions`, String(id)));
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, 'transactions');
@@ -272,6 +287,7 @@ const App: React.FC = () => {
   };
 
   const handleSetStudents = async (newStudents: Student[] | ((prev: Student[]) => Student[])) => {
+    if (!currentUser) return;
     const updatedStudents = typeof newStudents === 'function' ? newStudents(students) : newStudents;
     const currentIds = students.map(s => s.id);
     const newIds = updatedStudents.map(s => s.id);
@@ -279,13 +295,13 @@ const App: React.FC = () => {
     try {
       // Added or Updated
       for (const s of updatedStudents) {
-        if (s.id) await setDoc(doc(db, 'students', String(s.id)), s);
+        if (s.id) await setDoc(doc(db, `users/${currentUser.uid}/students`, String(s.id)), s);
       }
 
       // Deleted
       const deletedIds = currentIds.filter(id => !newIds.includes(id));
       for (const id of deletedIds) {
-        if (id) await deleteDoc(doc(db, 'students', String(id)));
+        if (id) await deleteDoc(doc(db, `users/${currentUser.uid}/students`, String(id)));
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'students');
@@ -293,18 +309,19 @@ const App: React.FC = () => {
   };
 
   const handleSetPrograms = async (newPrograms: Program[] | ((prev: Program[]) => Program[])) => {
+    if (!currentUser) return;
     const updatedPrograms = typeof newPrograms === 'function' ? newPrograms(programs) : newPrograms;
     const currentIds = programs.map(p => p.id);
     const newIds = updatedPrograms.map(p => p.id);
 
     try {
       for (const p of updatedPrograms) {
-        if (p.id) await setDoc(doc(db, 'programs', String(p.id)), p);
+        if (p.id) await setDoc(doc(db, `users/${currentUser.uid}/programs`, String(p.id)), p);
       }
 
       const deletedIds = currentIds.filter(id => !newIds.includes(id));
       for (const id of deletedIds) {
-        if (id) await deleteDoc(doc(db, 'programs', String(id)));
+        if (id) await deleteDoc(doc(db, `users/${currentUser.uid}/programs`, String(id)));
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'programs');
@@ -312,18 +329,19 @@ const App: React.FC = () => {
   };
 
   const handleSetSchedules = async (newSchedules: Schedule[] | ((prev: Schedule[]) => Schedule[])) => {
+    if (!currentUser) return;
     const updatedSchedules = typeof newSchedules === 'function' ? newSchedules(schedules) : newSchedules;
     const currentIds = schedules.map(s => s.id);
     const newIds = updatedSchedules.map(s => s.id);
 
     try {
       for (const s of updatedSchedules) {
-        if (s.id) await setDoc(doc(db, 'schedules', String(s.id)), s);
+        if (s.id) await setDoc(doc(db, `users/${currentUser.uid}/schedules`, String(s.id)), s);
       }
 
       const deletedIds = currentIds.filter(id => !newIds.includes(id));
       for (const id of deletedIds) {
-        if (id) await deleteDoc(doc(db, 'schedules', String(id)));
+        if (id) await deleteDoc(doc(db, `users/${currentUser.uid}/schedules`, String(id)));
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'schedules');
@@ -331,10 +349,12 @@ const App: React.FC = () => {
   };
 
   const restoreData = async (data: any) => {
-    if (!firebaseAuth.currentUser) {
+    if (!currentUser) {
       alert('Anda harus login dengan Google untuk memulihkan data ke server.');
       return;
     }
+
+    const userPath = `users/${currentUser.uid}`;
 
     try {
       if (data.students) {
@@ -345,7 +365,7 @@ const App: React.FC = () => {
               name: String(s.name || ''),
               class: String(s.class || '')
             };
-            await setDoc(doc(db, 'students', sanitized.id), sanitized);
+            await setDoc(doc(db, userPath, 'students', sanitized.id), sanitized);
           }
         }
       }
@@ -357,7 +377,7 @@ const App: React.FC = () => {
               name: String(p.name || ''),
               time: String(p.time || '')
             };
-            await setDoc(doc(db, 'programs', sanitized.id), sanitized);
+            await setDoc(doc(db, userPath, 'programs', sanitized.id), sanitized);
           }
         }
       }
@@ -374,7 +394,7 @@ const App: React.FC = () => {
               program: String(t.program || ''),
               reason: String(t.reason || '')
             };
-            await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
+            await setDoc(doc(db, userPath, 'transactions', sanitized.id), sanitized);
           }
         }
       }
@@ -391,7 +411,7 @@ const App: React.FC = () => {
               class: String(s.class || ''),
               notes: String(s.notes || '')
             };
-            await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
+            await setDoc(doc(db, userPath, 'schedules', sanitized.id), sanitized);
           }
         }
       }
@@ -400,7 +420,7 @@ const App: React.FC = () => {
           user: String(data.auth.user || 'admin'),
           pass: String(data.auth.pass || 'admin123')
         };
-        await setDoc(doc(db, 'auth', 'config'), sanitizedAuth);
+        await setDoc(doc(db, userPath, 'auth', 'config'), sanitizedAuth);
       }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'restore');
@@ -441,7 +461,7 @@ const App: React.FC = () => {
     }
   };
 
-  const isAdmin = currentUser?.email === 'wiwikismiati61@guru.smp.belajar.id';
+  const isAdmin = !!currentUser;
 
   const handleNavigate = (view: ViewType) => {
     const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan'];
