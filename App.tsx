@@ -96,19 +96,6 @@ const App: React.FC = () => {
 
   // Firebase Data Sync
   useEffect(() => {
-    if (!currentUser) {
-      setStudents([]);
-      setPrograms([
-        { id: '1', name: 'Sholat Dhuha', time: '07:00' },
-        { id: '2', name: 'Sholat Dzuhur', time: '12:00' },
-        { id: '3', name: 'Jumat Beramal', time: 'Jumat 07:00' }
-      ]);
-      setTransactions([]);
-      setSchedules([]);
-      setIsDataLoaded(true);
-      return;
-    }
-
     const unsubStudents = onSnapshot(collection(db, 'students'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Student);
       setStudents(data);
@@ -162,7 +149,7 @@ const App: React.FC = () => {
       unsubSchedules();
       unsubAuth();
     };
-  }, [currentUser]);
+  }, []);
 
   // Migration from localStorage to Firebase
   useEffect(() => {

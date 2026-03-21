@@ -134,29 +134,34 @@ service cloud.firestore {
     // Rules
     // ===============================================================
 
-    match /test/connection {
-      allow read: if true;
-    }
-
     // Global collections for shared data
     match /students/{studentId} {
-      allow read, write: if isAuthenticated();
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
     match /programs/{programId} {
-      allow read, write: if isAuthenticated();
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
     match /transactions/{transactionId} {
-      allow read, write: if isAuthenticated();
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
     match /schedules/{scheduleId} {
-      allow read, write: if isAuthenticated();
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
-    match /auth/config {
-      allow read, write: if isAuthenticated();
+    match /auth/{configId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /test/{testId} {
+      allow read: if true;
     }
 
     // Legacy user-scoped paths (for backward compatibility or private data)
