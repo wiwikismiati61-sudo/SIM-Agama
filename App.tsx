@@ -64,6 +64,14 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 const DEFAULT_AUTH: Auth = { user: 'admin', pass: 'admin123' };
 
+const ALLOWED_EMAILS = [
+  'wiwikismiati61@guru.smp.belajar.id',
+  'siti.nafisah5251@guru.smp.belajar.id',
+  'mohammadsyaikhu62@guru.smp.belajar.id',
+  'mayasari66@guru.smp.belajar.id',
+  'ekispd42@guru.smp.belajar.id'
+];
+
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -84,6 +92,14 @@ const App: React.FC = () => {
   // Firebase Auth Sync
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
+      if (user && user.email && !ALLOWED_EMAILS.includes(user.email)) {
+        alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+        signOut(firebaseAuth);
+        setCurrentUser(null);
+        setIsLoggedIn(false);
+        return;
+      }
+      
       setCurrentUser(user);
       if (user) {
         setIsLoggedIn(true);
@@ -517,7 +533,15 @@ const App: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(firebaseAuth, googleProvider);
+      const result = await signInWithPopup(firebaseAuth, googleProvider);
+      const user = result.user;
+      
+      if (user && user.email && !ALLOWED_EMAILS.includes(user.email)) {
+        alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+        await signOut(firebaseAuth);
+        return;
+      }
+      
       setShowLoginModal(false);
     } catch (error) {
       console.error('Login Error:', error);
