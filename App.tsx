@@ -12,6 +12,56 @@ import ScheduleView from './views/Schedule';
 import { db, auth as firebaseAuth, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, orderBy, googleProvider, signInWithPopup, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      let errorMessage = "Terjadi kesalahan pada aplikasi.";
+      try {
+        const parsed = JSON.parse(this.state.error.message);
+        if (parsed.error && parsed.operationType) {
+          errorMessage = `Kesalahan Firestore (${parsed.operationType}): ${parsed.error}`;
+        }
+      } catch (e) {
+        errorMessage = this.state.error.message || errorMessage;
+      }
+
+      return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl border border-slate-100 text-center">
+            <div className="w-20 h-20 bg-red-100 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+              <i className="fas fa-exclamation-triangle text-3xl"></i>
+            </div>
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight mb-4">Waduh, Ada Masalah!</h2>
+            <p className="text-slate-600 font-medium mb-8">{errorMessage}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98]"
+            >
+              Muat Ulang Aplikasi
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 const DEFAULT_AUTH: Auth = { user: 'admin', pass: 'admin123' };
 
 const App: React.FC = () => {
@@ -48,9 +98,14 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!currentUser) {
       setStudents([]);
-      setPrograms([]);
+      setPrograms([
+        { id: '1', name: 'Sholat Dhuha', time: '07:00' },
+        { id: '2', name: 'Sholat Dzuhur', time: '12:00' },
+        { id: '3', name: 'Jumat Beramal', time: 'Jumat 07:00' }
+      ]);
       setTransactions([]);
       setSchedules([]);
+      setIsDataLoaded(true);
       return;
     }
 
@@ -59,6 +114,8 @@ const App: React.FC = () => {
     const unsubStudents = onSnapshot(collection(db, userPath, 'students'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Student);
       setStudents(data);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `${userPath}/students`);
     });
 
     const unsubPrograms = onSnapshot(collection(db, userPath, 'programs'), (snapshot) => {
@@ -68,11 +125,15 @@ const App: React.FC = () => {
         { id: '2', name: 'Sholat Dzuhur', time: '12:00' },
         { id: '3', name: 'Jumat Beramal', time: 'Jumat 07:00' }
       ]);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `${userPath}/programs`);
     });
 
     const unsubTransactions = onSnapshot(collection(db, userPath, 'transactions'), (snapshot) => {
       const data = snapshot.docs.map(doc => doc.data() as Transaction);
       setTransactions(data);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `${userPath}/transactions`);
     });
 
     const unsubSchedules = onSnapshot(collection(db, userPath, 'schedules'), (snapshot) => {
@@ -82,12 +143,16 @@ const App: React.FC = () => {
         month: s.month || 'Setiap Bulan',
         year: s.year || new Date().getFullYear().toString()
       })));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `${userPath}/schedules`);
     });
 
     const unsubAuth = onSnapshot(doc(db, userPath, 'auth', 'config'), (docSnap) => {
       if (docSnap.exists()) {
         setAuth(docSnap.data() as Auth);
       }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, `${userPath}/auth/config`);
     });
 
     setIsDataLoaded(true);
@@ -108,10 +173,11 @@ const App: React.FC = () => {
       if (migrationFlag) return;
 
       // Only migrate if the admin is logged in
-      if (currentUser?.email !== 'wiwikismiati61@guru.smp.belajar.id') {
+      if (!currentUser || currentUser.email !== 'wiwikismiati61@guru.smp.belajar.id') {
         return;
       }
 
+      const userPath = `users/${currentUser.uid}`;
       console.log('Starting migration to Firebase...');
       const savedDb = localStorage.getItem('sim_db');
       const savedAuth = localStorage.getItem('sim_auth');
@@ -132,7 +198,7 @@ const App: React.FC = () => {
                   class: String(s.class || '')
                 };
                 try {
-                  await setDoc(doc(db, 'students', sanitized.id), sanitized);
+                  await setDoc(doc(db, userPath, 'students', sanitized.id), sanitized);
                 } catch (e) {
                   handleFirestoreError(e, OperationType.WRITE, `migration/students/${sanitized.id}`);
                 }
@@ -150,7 +216,7 @@ const App: React.FC = () => {
                   time: String(p.time || '')
                 };
                 try {
-                  await setDoc(doc(db, 'programs', sanitized.id), sanitized);
+                  await setDoc(doc(db, userPath, 'programs', sanitized.id), sanitized);
                 } catch (e) {
                   handleFirestoreError(e, OperationType.WRITE, `migration/programs/${sanitized.id}`);
                 }
@@ -173,7 +239,7 @@ const App: React.FC = () => {
                   reason: String(t.reason || '')
                 };
                 try {
-                  await setDoc(doc(db, 'transactions', sanitized.id), sanitized);
+                  await setDoc(doc(db, userPath, 'transactions', sanitized.id), sanitized);
                 } catch (e) {
                   handleFirestoreError(e, OperationType.WRITE, `migration/transactions/${sanitized.id}`);
                 }
@@ -196,7 +262,7 @@ const App: React.FC = () => {
                   notes: String(s.notes || '')
                 };
                 try {
-                  await setDoc(doc(db, 'schedules', sanitized.id), sanitized);
+                  await setDoc(doc(db, userPath, 'schedules', sanitized.id), sanitized);
                 } catch (e) {
                   handleFirestoreError(e, OperationType.WRITE, `migration/schedules/${sanitized.id}`);
                 }
@@ -212,13 +278,13 @@ const App: React.FC = () => {
             pass: String(authData.pass || 'admin123')
           };
           try {
-            await setDoc(doc(db, 'auth', 'config'), sanitizedAuth);
+            await setDoc(doc(db, userPath, 'auth', 'config'), sanitizedAuth);
           } catch (e) {
             handleFirestoreError(e, OperationType.WRITE, 'migration/auth');
           }
         } else {
           try {
-            await setDoc(doc(db, 'auth', 'config'), DEFAULT_AUTH);
+            await setDoc(doc(db, userPath, 'auth', 'config'), DEFAULT_AUTH);
           } catch (e) {
             handleFirestoreError(e, OperationType.WRITE, 'migration/auth-default');
           }
@@ -237,7 +303,10 @@ const App: React.FC = () => {
   }, [isDataLoaded, isLoggedIn, currentUser]);
 
   const updateAuth = async (newAuth: Auth) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menyimpan pengaturan ke server.');
+      return;
+    }
     try {
       await setDoc(doc(db, `users/${currentUser.uid}/auth`, 'config'), newAuth);
     } catch (error) {
@@ -246,7 +315,10 @@ const App: React.FC = () => {
   };
 
   const handleAddTransaction = async (t: Transaction) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menyimpan transaksi ke server.');
+      return;
+    }
     try {
       if (!t.id) throw new Error('Transaction ID is missing');
       await setDoc(doc(db, `users/${currentUser.uid}/transactions`, String(t.id)), t);
@@ -256,7 +328,10 @@ const App: React.FC = () => {
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menghapus transaksi dari server.');
+      return;
+    }
     try {
       if (!id) throw new Error('Transaction ID is missing');
       await deleteDoc(doc(db, `users/${currentUser.uid}/transactions`, String(id)));
@@ -266,7 +341,10 @@ const App: React.FC = () => {
   };
 
   const handleUpdateTransaction = async (updated: Transaction) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk memperbarui transaksi di server.');
+      return;
+    }
     try {
       if (!updated.id) throw new Error('Transaction ID is missing');
       await setDoc(doc(db, `users/${currentUser.uid}/transactions`, String(updated.id)), updated);
@@ -276,7 +354,10 @@ const App: React.FC = () => {
   };
 
   const handleDeleteMultipleTransactions = async (ids: string[]) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menghapus beberapa transaksi dari server.');
+      return;
+    }
     try {
       for (const id of ids) {
         if (id) await deleteDoc(doc(db, `users/${currentUser.uid}/transactions`, String(id)));
@@ -287,7 +368,10 @@ const App: React.FC = () => {
   };
 
   const handleSetStudents = async (newStudents: Student[] | ((prev: Student[]) => Student[])) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menyimpan data siswa ke server.');
+      return;
+    }
     const updatedStudents = typeof newStudents === 'function' ? newStudents(students) : newStudents;
     const currentIds = students.map(s => s.id);
     const newIds = updatedStudents.map(s => s.id);
@@ -309,7 +393,10 @@ const App: React.FC = () => {
   };
 
   const handleSetPrograms = async (newPrograms: Program[] | ((prev: Program[]) => Program[])) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menyimpan data program ke server.');
+      return;
+    }
     const updatedPrograms = typeof newPrograms === 'function' ? newPrograms(programs) : newPrograms;
     const currentIds = programs.map(p => p.id);
     const newIds = updatedPrograms.map(p => p.id);
@@ -329,7 +416,10 @@ const App: React.FC = () => {
   };
 
   const handleSetSchedules = async (newSchedules: Schedule[] | ((prev: Schedule[]) => Schedule[])) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      alert('Anda harus login dengan Google untuk menyimpan data jadwal ke server.');
+      return;
+    }
     const updatedSchedules = typeof newSchedules === 'function' ? newSchedules(schedules) : newSchedules;
     const currentIds = schedules.map(s => s.id);
     const newIds = updatedSchedules.map(s => s.id);
@@ -461,7 +551,7 @@ const App: React.FC = () => {
     }
   };
 
-  const isAdmin = !!currentUser;
+  const isAdmin = !!currentUser || isLoggedIn;
 
   const handleNavigate = (view: ViewType) => {
     const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan'];
@@ -484,12 +574,14 @@ const App: React.FC = () => {
   }, [isAdmin, currentView]);
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
+    <ErrorBoundary>
+      <div className="flex h-screen bg-slate-50 overflow-hidden font-sans selection:bg-brand-500 selection:text-white">
       <Sidebar 
         currentView={currentView} 
         onNavigate={handleNavigate}
         isAdmin={isAdmin}
         isLoggedIn={isLoggedIn}
+        isFirebaseLoggedIn={!!currentUser}
         onLoginClick={() => setShowLoginModal(true)}
         onLogout={handleLogout} 
         isOpen={isSidebarOpen}
@@ -633,6 +725,7 @@ const App: React.FC = () => {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 };
 

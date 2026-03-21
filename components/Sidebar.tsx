@@ -7,13 +7,14 @@ interface SidebarProps {
   onNavigate: (view: ViewType) => void;
   isAdmin: boolean;
   isLoggedIn: boolean;
+  isFirebaseLoggedIn: boolean;
   onLoginClick: () => void;
   onLogout: () => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isLoggedIn, isFirebaseLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen }) => {
   const menuItems: { id: ViewType; label: string; icon: string; restricted: boolean }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home', restricted: false },
     { id: 'master', label: 'Master Data', icon: 'fas fa-database', restricted: true },
@@ -64,6 +65,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isL
         </nav>
 
         <div className="p-4 border-t border-slate-800/50">
+          {isLoggedIn && !isFirebaseLoggedIn && (
+            <div className="px-4 py-2 mb-2 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <p className="text-[10px] text-amber-500 font-bold uppercase tracking-wider leading-tight">
+                <i className="fas fa-exclamation-triangle mr-1"></i>
+                Cloud Sync Mati
+              </p>
+              <p className="text-[9px] text-slate-500 mt-1 leading-tight">
+                Login Google untuk simpan data ke server.
+              </p>
+            </div>
+          )}
           {isLoggedIn ? (
             <button
               onClick={onLogout}
