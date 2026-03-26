@@ -7,10 +7,10 @@ interface TransactionProps {
   students: Student[];
   programs: Program[];
   transactions: Transaction[];
-  onAddTransaction: (t: Transaction) => void;
-  onDeleteTransaction: (id: string) => void;
-  onUpdateTransaction: (updated: Transaction) => void;
-  onDeleteMultipleTransactions?: (ids: string[]) => void;
+  onAddTransaction: (t: Transaction) => Promise<void>;
+  onDeleteTransaction: (id: string) => Promise<void>;
+  onUpdateTransaction: (updated: Transaction) => Promise<void>;
+  onDeleteMultipleTransactions?: (ids: string[]) => Promise<void>;
 }
 
 const TransactionView: React.FC<TransactionProps> = ({ 
@@ -93,7 +93,7 @@ const TransactionView: React.FC<TransactionProps> = ({
     return colDateMatch && colStudentMatch && colClassMatch && colProgramMatch && colReasonMatch;
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const isProgramValid = selectedProgram && (selectedProgram !== 'Lainnya' || String(manualProgram || "").trim() !== '');
@@ -113,23 +113,28 @@ const TransactionView: React.FC<TransactionProps> = ({
 
     const newTrx: Transaction = {
       id: Date.now().toString(),
-      date,
-      time,
-      studentId: String(student.id),
-      studentName: student.name,
-      class: student.class,
+      date: date || "",
+      time: time || "",
+      studentId: String(student.id || ""),
+      studentName: student.name || "",
+      class: student.class || "",
       program: selectedProgram === 'Lainnya' ? String(manualProgram || "").trim() : String(selectedProgram || ""),
-      reason: selectedReason
+      reason: selectedReason || ""
     };
 
-    onAddTransaction(newTrx);
-    setMessage({type: 'success', text: 'Data ketidakhadiran berhasil disimpan!'});
-    setTimeout(() => setMessage(null), 3000);
-    
-    // Partially reset form
-    setSelectedStudent('');
-    setSelectedReason('');
-    setManualProgram('');
+    try {
+      await onAddTransaction(newTrx);
+      setMessage({type: 'success', text: 'Data ketidakhadiran berhasil disimpan!'});
+      setTimeout(() => setMessage(null), 3000);
+      
+      // Partially reset form
+      setSelectedStudent('');
+      setSelectedReason('');
+      setManualProgram('');
+    } catch (error: any) {
+      setMessage({type: 'error', text: 'Gagal menyimpan data: ' + (error.message || 'Error tidak diketahui')});
+      setTimeout(() => setMessage(null), 5000);
+    }
   };
 
   return (
@@ -278,7 +283,7 @@ const TransactionView: React.FC<TransactionProps> = ({
             </label>
             {showDoubleOnly && duplicateKeys.size > 0 && onDeleteMultipleTransactions && (
               <button
-                onClick={() => {
+                onClick={async () => {
                   const toDelete: string[] = [];
                   const keysSeen = new Set<string>();
                   transactions.forEach(t => {
@@ -292,7 +297,14 @@ const TransactionView: React.FC<TransactionProps> = ({
                     }
                   });
                   if (confirm(`Delete ${toDelete.length} duplicate entries?`)) {
-                    onDeleteMultipleTransactions(toDelete);
+                    try {
+                      await onDeleteMultipleTransactions(toDelete);
+                      setMessage({type: 'success', text: 'Data duplikat berhasil dihapus!'});
+                      setTimeout(() => setMessage(null), 3000);
+                    } catch (error: any) {
+                      setMessage({type: 'error', text: 'Gagal menghapus data: ' + (error.message || 'Error tidak diketahui')});
+                      setTimeout(() => setMessage(null), 5000);
+                    }
                   }
                 }}
                 className="px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-lg hover:bg-red-100 transition-colors"
@@ -504,9 +516,16 @@ const TransactionView: React.FC<TransactionProps> = ({
                 Cancel
               </button>
               <button 
-                onClick={() => {
-                  onUpdateTransaction(editData);
-                  setEditingId(null);
+                onClick={async () => {
+                  try {
+                    await onUpdateTransaction(editData);
+                    setEditingId(null);
+                    setMessage({type: 'success', text: 'Data berhasil diupdate!'});
+                    setTimeout(() => setMessage(null), 3000);
+                  } catch (error: any) {
+                    setMessage({type: 'error', text: 'Gagal update data: ' + (error.message || 'Error tidak diketahui')});
+                    setTimeout(() => setMessage(null), 5000);
+                  }
                 }}
                 className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm"
               >
@@ -534,9 +553,16 @@ const TransactionView: React.FC<TransactionProps> = ({
                 Cancel
               </button>
               <button 
-                onClick={() => {
-                  onDeleteTransaction(deleteConfirmId);
-                  setDeleteConfirmId(null);
+                onClick={async () => {
+                  try {
+                    await onDeleteTransaction(deleteConfirmId);
+                    setDeleteConfirmId(null);
+                    setMessage({type: 'success', text: 'Data berhasil dihapus!'});
+                    setTimeout(() => setMessage(null), 3000);
+                  } catch (error: any) {
+                    setMessage({type: 'error', text: 'Gagal menghapus data: ' + (error.message || 'Error tidak diketahui')});
+                    setTimeout(() => setMessage(null), 5000);
+                  }
                 }}
                 className="flex-1 px-4 py-2 bg-rose-600 text-white font-semibold rounded-xl hover:bg-rose-700 transition-colors shadow-sm"
               >

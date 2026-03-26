@@ -351,7 +351,13 @@ const App: React.FC = () => {
     }
     try {
       if (!t.id) throw new Error('Transaction ID is missing');
-      await setDoc(doc(db, 'transactions', String(t.id)), t);
+      
+      // Remove undefined values to prevent Firestore errors
+      const cleanData = Object.fromEntries(
+        Object.entries(t).filter(([_, v]) => v !== undefined)
+      );
+      
+      await setDoc(doc(db, 'transactions', String(t.id)), cleanData);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `transactions/${t.id}`);
     }
@@ -377,7 +383,13 @@ const App: React.FC = () => {
     }
     try {
       if (!updated.id) throw new Error('Transaction ID is missing');
-      await setDoc(doc(db, 'transactions', String(updated.id)), updated);
+      
+      // Remove undefined values to prevent Firestore errors
+      const cleanData = Object.fromEntries(
+        Object.entries(updated).filter(([_, v]) => v !== undefined)
+      );
+      
+      await setDoc(doc(db, 'transactions', String(updated.id)), cleanData);
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `transactions/${updated.id}`);
     }
