@@ -12,9 +12,10 @@ interface SidebarProps {
   onLogout: () => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  userAllowedViews: ViewType[] | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isLoggedIn, isFirebaseLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isLoggedIn, isFirebaseLoggedIn, onLoginClick, onLogout, isOpen, setIsOpen, userAllowedViews }) => {
   const menuItems: { id: ViewType; label: string; icon: string; restricted: boolean }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-home', restricted: false },
     { id: 'master', label: 'Master Data', icon: 'fas fa-database', restricted: true },
@@ -22,7 +23,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isL
     { id: 'laporan', label: 'Laporan', icon: 'fas fa-file-excel', restricted: false },
     { id: 'jadwal', label: 'Jadwal Mingguan', icon: 'fas fa-calendar-week', restricted: false },
     { id: 'pengaturan', label: 'Pengaturan & DB', icon: 'fas fa-cogs', restricted: true },
+    { id: 'users', label: 'Manajemen User', icon: 'fas fa-users', restricted: true },
   ];
+
+  const visibleMenuItems = menuItems.filter(item => {
+    if (!isAdmin) return true; // Show all, but restricted ones will have a lock icon
+    if (!userAllowedViews) return true; // Fallback
+    return userAllowedViews.includes(item.id);
+  });
 
   return (
     <>
@@ -45,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, isAdmin, isL
 
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Menu Utama</p>
-          {menuItems.map((item) => (
+          {visibleMenuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}

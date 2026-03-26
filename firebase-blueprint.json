@@ -63,6 +63,21 @@
         "pass": { "type": "string" }
       },
       "required": ["user", "pass"]
+    },
+    "AllowedUser": {
+      "title": "AllowedUser",
+      "description": "Users allowed to access the application",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "addedAt": { "type": "string" },
+        "allowedViews": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["email", "name", "addedAt", "allowedViews"]
     }
   },
   "firestore": {
@@ -85,6 +100,10 @@
     "/auth/config": {
       "schema": "Auth",
       "description": "Global authentication configuration"
+    },
+    "/allowedUsers/{email}": {
+      "schema": "AllowedUser",
+      "description": "Global allowed users list"
     }
   }
 }

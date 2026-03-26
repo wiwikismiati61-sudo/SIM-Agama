@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Auth, ViewType, Student, Program, Transaction, Schedule } from './types';
+import { Auth, ViewType, Student, Program, Transaction, Schedule, AllowedUser } from './types';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardView from './views/Dashboard';
@@ -9,6 +9,7 @@ import TransactionView from './views/Transaction';
 import ReportView from './views/Reports';
 import SettingsView from './views/Settings';
 import ScheduleView from './views/Schedule';
+import UsersView from './views/Users';
 import { db, auth as firebaseAuth, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, orderBy, googleProvider, signInWithPopup, handleFirestoreError, OperationType } from './firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
@@ -64,13 +65,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 const DEFAULT_AUTH: Auth = { user: 'admin', pass: 'admin123' };
 
-const ALLOWED_EMAILS = [
-  'wiwikismiati61@guru.smp.belajar.id',
-  'siti.nafisah5251@guru.smp.belajar.id',
-  'mohammadsyaikhu62@guru.smp.belajar.id',
-  'mayasari66@guru.smp.belajar.id',
-  'ekispd42@guru.smp.belajar.id'
-];
+const SUPER_ADMIN_EMAIL = 'wiwikismiati61@guru.smp.belajar.id';
 
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -89,15 +84,33 @@ const App: React.FC = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  const [allowedUsers, setAllowedUsers] = useState<AllowedUser[]>([]);
+
   // Firebase Auth Sync
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      if (user && user.email && !ALLOWED_EMAILS.includes(user.email)) {
-        alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
-        signOut(firebaseAuth);
-        setCurrentUser(null);
-        setIsLoggedIn(false);
-        return;
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+      if (user && user.email) {
+        if (user.email !== SUPER_ADMIN_EMAIL) {
+          try {
+            const docRef = doc(db, 'allowedUsers', user.email);
+            const docSnap = await getDoc(docRef);
+            
+            if (!docSnap.exists()) {
+              alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+              await signOut(firebaseAuth);
+              setCurrentUser(null);
+              setIsLoggedIn(false);
+              return;
+            }
+          } catch (error) {
+            console.error("Error checking allowed user:", error);
+            alert(`Gagal memverifikasi akses untuk ${user.email}.`);
+            await signOut(firebaseAuth);
+            setCurrentUser(null);
+            setIsLoggedIn(false);
+            return;
+          }
+        }
       }
       
       setCurrentUser(user);
@@ -166,6 +179,24 @@ const App: React.FC = () => {
       unsubAuth();
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setAllowedUsers([]);
+      return;
+    }
+
+    const unsubAllowedUsers = onSnapshot(collection(db, 'allowedUsers'), (snapshot) => {
+      const data = snapshot.docs.map(doc => doc.data() as AllowedUser);
+      setAllowedUsers(data);
+    }, (error) => {
+      console.error("Error fetching allowed users:", error);
+    });
+
+    return () => {
+      unsubAllowedUsers();
+    };
+  }, [currentUser]);
 
   // Migration from localStorage to Firebase
   useEffect(() => {
@@ -536,10 +567,16 @@ const App: React.FC = () => {
       const result = await signInWithPopup(firebaseAuth, googleProvider);
       const user = result.user;
       
-      if (user && user.email && !ALLOWED_EMAILS.includes(user.email)) {
-        alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
-        await signOut(firebaseAuth);
-        return;
+      if (user && user.email) {
+        if (user.email !== SUPER_ADMIN_EMAIL) {
+          const docRef = doc(db, 'allowedUsers', user.email);
+          const docSnap = await getDoc(docRef);
+          if (!docSnap.exists()) {
+            alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+            await signOut(firebaseAuth);
+            return;
+          }
+        }
       }
       
       setShowLoginModal(false);
@@ -560,25 +597,57 @@ const App: React.FC = () => {
 
   const isAdmin = !!currentUser || isLoggedIn;
 
+  const getCurrentUserAllowedViews = (): ViewType[] | null => {
+    if (!currentUser) return null;
+    if (currentUser.email === SUPER_ADMIN_EMAIL) return ['dashboard', 'master', 'transaksi', 'laporan', 'jadwal', 'pengaturan', 'users'];
+    
+    const userConfig = allowedUsers.find(u => u.email === currentUser.email);
+    if (userConfig && userConfig.allowedViews) {
+      return userConfig.allowedViews;
+    }
+    
+    // Default fallback if allowedViews is not set (legacy users)
+    return ['dashboard', 'master', 'transaksi', 'laporan', 'jadwal', 'pengaturan', 'users'];
+  };
+
   const handleNavigate = (view: ViewType) => {
-    const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan'];
+    const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan', 'users'];
     
     if (restrictedViews.includes(view) && !isAdmin) {
       setShowLoginModal(true);
       return;
+    }
+
+    if (isAdmin) {
+      const userAllowedViews = getCurrentUserAllowedViews();
+      if (userAllowedViews && !userAllowedViews.includes(view)) {
+        alert('Anda tidak memiliki hak akses untuk menu ini.');
+        return;
+      }
     }
     
     setCurrentView(view);
     setIsSidebarOpen(false);
   };
 
-  // Redirect to a public view if logged out while on a restricted view
+  // Redirect to a public view if logged out while on a restricted view or if access is revoked
   useEffect(() => {
-    const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan'];
+    const restrictedViews: ViewType[] = ['master', 'transaksi', 'pengaturan', 'users'];
+    
     if (!isAdmin && restrictedViews.includes(currentView)) {
       setCurrentView('dashboard');
+      return;
     }
-  }, [isAdmin, currentView]);
+
+    if (isAdmin) {
+      const userAllowedViews = getCurrentUserAllowedViews();
+      if (userAllowedViews && !userAllowedViews.includes(currentView)) {
+        // Find the first allowed view, or default to dashboard
+        const fallbackView = userAllowedViews.length > 0 ? userAllowedViews[0] : 'dashboard';
+        setCurrentView(fallbackView);
+      }
+    }
+  }, [isAdmin, currentView, allowedUsers, currentUser]);
 
   return (
     <ErrorBoundary>
@@ -593,6 +662,7 @@ const App: React.FC = () => {
         onLogout={handleLogout} 
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
+        userAllowedViews={getCurrentUserAllowedViews()}
       />
       
       <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -643,6 +713,12 @@ const App: React.FC = () => {
                 onUpdateAuth={updateAuth} 
                 onRestore={restoreData}
                 data={{ students, programs, transactions, schedules, auth }}
+                isFirebaseLoggedIn={!!currentUser}
+              />
+            )}
+            {currentView === 'users' && (
+              <UsersView 
+                allowedUsers={allowedUsers}
                 isFirebaseLoggedIn={!!currentUser}
               />
             )}

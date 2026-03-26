@@ -39,6 +39,13 @@ export interface Auth {
   pass: string;
 }
 
-export type ViewType = 'dashboard' | 'master' | 'transaksi' | 'laporan' | 'jadwal' | 'pengaturan';
+export type ViewType = 'dashboard' | 'master' | 'transaksi' | 'laporan' | 'jadwal' | 'pengaturan' | 'users';
+
+export interface AllowedUser {
+  email: string;
+  name: string;
+  addedAt: string;
+  allowedViews: ViewType[];
+}
 
 export const REASONS = ['Hadir', 'Izin', 'Sakit', 'Alpha', 'Haid', 'Pulang sebelum waktunya'];

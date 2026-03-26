@@ -34,7 +34,8 @@ const Header: React.FC<HeaderProps> = ({ viewTitle, onToggleSidebar }) => {
     transaksi: 'Input Ketidakhadiran',
     laporan: 'Laporan Absensi',
     jadwal: 'Jadwal Kegiatan Mingguan',
-    pengaturan: 'Pengaturan Sistem'
+    pengaturan: 'Pengaturan Sistem',
+    users: 'Manajemen User'
   };
 
   return (
