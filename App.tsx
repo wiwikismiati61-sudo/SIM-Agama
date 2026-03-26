@@ -571,9 +571,11 @@ const App: React.FC = () => {
       return;
     }
 
+    const email = loginForm.user.toLowerCase().trim();
+
     try {
       // Try to sign in first
-      const result = await signInWithEmailAndPassword(firebaseAuth, loginForm.user, loginForm.pass);
+      const result = await signInWithEmailAndPassword(firebaseAuth, email, loginForm.pass);
       const user = result.user;
       
       if (user) {
@@ -601,9 +603,9 @@ const App: React.FC = () => {
       
       // If user not found, try to create it (only for specific email to allow setup)
       if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        if (loginForm.user === 'andikamasruroh04@guru.smp.belajar.id') {
+        if (email === 'andikamasruroh04@guru.smp.belajar.id') {
           try {
-            const createResult = await createUserWithEmailAndPassword(firebaseAuth, loginForm.user, loginForm.pass);
+            const createResult = await createUserWithEmailAndPassword(firebaseAuth, email, loginForm.pass);
             const newUser = createResult.user;
             
             // Allow this specific user to access
@@ -613,7 +615,11 @@ const App: React.FC = () => {
             return;
           } catch (createError: any) {
             console.error('Create User Error:', createError);
-            alert('Gagal membuat akun: ' + createError.message);
+            if (createError.code === 'auth/email-already-in-use') {
+              alert('Password salah. Silakan coba lagi.');
+            } else {
+              alert('Gagal membuat akun: ' + createError.message);
+            }
           }
         } else {
           alert('Username atau Password salah, atau akun tidak ditemukan.');
@@ -842,11 +848,11 @@ const App: React.FC = () => {
 
             <div className="mt-8 flex flex-col gap-3">
               <button 
-                onClick={handleGoogleLogin}
-                className="w-full py-4 bg-white border-2 border-slate-200 hover:border-brand-500 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3 group shadow-sm hover:shadow-md"
+                onClick={handleLogin}
+                className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center space-x-2"
               >
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-                <span className="text-lg">Masuk dengan Google</span>
+                <span>Masuk (Gunakan Email & Password di atas)</span>
+                <i className="fas fa-arrow-right text-sm"></i>
               </button>
 
               <div className="relative my-4">
@@ -854,17 +860,18 @@ const App: React.FC = () => {
                   <div className="w-full border-t border-slate-200"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-slate-400 font-bold">Atau Login Lokal</span>
+                  <span className="bg-white px-2 text-slate-400 font-bold">Atau</span>
                 </div>
               </div>
 
               <button 
-                onClick={handleLogin}
-                className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center space-x-2"
+                onClick={handleGoogleLogin}
+                className="w-full py-4 bg-white border-2 border-slate-200 hover:border-brand-500 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3 group shadow-sm hover:shadow-md"
               >
-                <span>Masuk Lokal</span>
-                <i className="fas fa-arrow-right text-sm"></i>
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+                <span className="text-lg">Masuk dengan Akun Google</span>
               </button>
+
               <button 
                 onClick={() => setShowLoginModal(false)}
                 className="w-full py-4 text-slate-500 hover:text-slate-800 font-bold transition-all"
