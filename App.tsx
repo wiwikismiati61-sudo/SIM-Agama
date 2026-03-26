@@ -11,7 +11,7 @@ import SettingsView from './views/Settings';
 import ScheduleView from './views/Schedule';
 import UsersView from './views/Users';
 import { db, auth as firebaseAuth, collection, doc, getDoc, setDoc, deleteDoc, onSnapshot, query, orderBy, googleProvider, signInWithPopup, handleFirestoreError, OperationType } from './firebase';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
