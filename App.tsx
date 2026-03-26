@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Auth, ViewType, Student, Program, Transaction, Schedule, AllowedUser } from './types';
+import { Auth, ViewType, Student, Program, Transaction, Schedule, AllowedUser, SUPER_ADMIN_EMAILS } from './types';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import DashboardView from './views/Dashboard';
@@ -65,8 +65,6 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 const DEFAULT_AUTH: Auth = { user: 'admin', pass: 'admin123' };
 
-const SUPER_ADMIN_EMAIL = 'wiwikismiati61@guru.smp.belajar.id';
-
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
@@ -90,7 +88,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
       if (user && user.email) {
-        if (user.email !== SUPER_ADMIN_EMAIL) {
+        if (!SUPER_ADMIN_EMAILS.includes(user.email)) {
           try {
             const docRef = doc(db, 'allowedUsers', user.email);
             const docSnap = await getDoc(docRef);
@@ -568,7 +566,7 @@ const App: React.FC = () => {
       const user = result.user;
       
       if (user && user.email) {
-        if (user.email !== SUPER_ADMIN_EMAIL) {
+        if (!SUPER_ADMIN_EMAILS.includes(user.email)) {
           const docRef = doc(db, 'allowedUsers', user.email);
           const docSnap = await getDoc(docRef);
           if (!docSnap.exists()) {
@@ -599,7 +597,7 @@ const App: React.FC = () => {
 
   const getCurrentUserAllowedViews = (): ViewType[] | null => {
     if (!currentUser) return null;
-    if (currentUser.email === SUPER_ADMIN_EMAIL) return ['dashboard', 'master', 'transaksi', 'laporan', 'jadwal', 'pengaturan', 'users'];
+    if (SUPER_ADMIN_EMAILS.includes(currentUser.email)) return ['dashboard', 'master', 'transaksi', 'laporan', 'jadwal', 'pengaturan', 'users'];
     
     const userConfig = allowedUsers.find(u => u.email === currentUser.email);
     if (userConfig && userConfig.allowedViews) {

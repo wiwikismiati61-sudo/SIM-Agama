@@ -60,7 +60,7 @@ service cloud.firestore {
     }
 
     function isSuperAdmin() {
-      return isAuthenticated() && request.auth.token.email == "wiwikismiati61@guru.smp.belajar.id";
+      return isAuthenticated() && (request.auth.token.email == "wiwikismiati61@guru.smp.belajar.id" || request.auth.token.email == "andikamasruroh04@guru.smp.belajar.id");
     }
 
     function isAdmin() {

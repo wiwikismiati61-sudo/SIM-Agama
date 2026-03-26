@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AllowedUser, ViewType } from '../types';
+import { AllowedUser, ViewType, SUPER_ADMIN_EMAILS } from '../types';
 import { db } from '../firebase';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { OperationType } from '../firebase';
@@ -93,7 +93,7 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
       return;
     }
 
-    if (userEmail === 'wiwikismiati61@guru.smp.belajar.id') {
+    if (SUPER_ADMIN_EMAILS.includes(userEmail)) {
       showMessage('error', 'Super Admin tidak dapat dihapus.');
       return;
     }
@@ -112,7 +112,7 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
 
   const handleUpdateUserViews = async (user: AllowedUser, viewId: ViewType) => {
     if (!isFirebaseLoggedIn) return;
-    if (user.email === 'wiwikismiati61@guru.smp.belajar.id') {
+    if (SUPER_ADMIN_EMAILS.includes(user.email)) {
       showMessage('error', 'Akses Super Admin tidak dapat diubah.');
       return;
     }
@@ -265,7 +265,7 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
                               type="checkbox"
                               checked={(user.allowedViews || []).includes(view.id)}
                               onChange={() => handleUpdateUserViews(user, view.id)}
-                              disabled={user.email === 'wiwikismiati61@guru.smp.belajar.id' || !isFirebaseLoggedIn}
+                              disabled={SUPER_ADMIN_EMAILS.includes(user.email) || !isFirebaseLoggedIn}
                               className="w-3.5 h-3.5 text-brand-600 rounded border-slate-300 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                             <span className="text-xs font-medium text-slate-600">{view.label}</span>
@@ -283,9 +283,9 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
                     <td className="p-4 text-center align-top">
                       <button
                         onClick={() => handleRemoveUser(user.email)}
-                        disabled={user.email === 'wiwikismiati61@guru.smp.belajar.id'}
+                        disabled={SUPER_ADMIN_EMAILS.includes(user.email)}
                         className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={user.email === 'wiwikismiati61@guru.smp.belajar.id' ? "Super Admin tidak dapat dihapus" : "Hapus User"}
+                        title={SUPER_ADMIN_EMAILS.includes(user.email) ? "Super Admin tidak dapat dihapus" : "Hapus User"}
                       >
                         <i className="fas fa-trash-alt text-sm"></i>
                       </button>

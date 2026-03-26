@@ -49,3 +49,8 @@ export interface AllowedUser {
 }
 
 export const REASONS = ['Hadir', 'Izin', 'Sakit', 'Alpha', 'Haid', 'Pulang sebelum waktunya'];
+
+export const SUPER_ADMIN_EMAILS = [
+  'wiwikismiati61@guru.smp.belajar.id',
+  'andikamasruroh04@guru.smp.belajar.id'
+];
