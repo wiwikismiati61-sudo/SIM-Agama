@@ -70,7 +70,6 @@ const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
-  const [loginForm, setLoginForm] = useState({ user: '', pass: '' });
 
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   
@@ -565,21 +564,6 @@ const App: React.FC = () => {
     }
   };
 
-  const handleLogin = async () => {
-    // Custom login check (optional, but keep it for legacy if needed)
-    if (loginForm.user === auth.user && loginForm.pass === auth.pass) {
-      // Note: This doesn't authenticate with Firebase Auth, so writes will still fail
-      // unless the user also signs in with Google.
-      // We'll prompt them to sign in with Google if they want to save data.
-      alert('Login lokal berhasil, silakan login dengan Google untuk izin simpan data.');
-      setIsLoggedIn(true);
-      setShowLoginModal(false);
-      setLoginForm({ user: '', pass: '' });
-    } else {
-      alert('Username atau Password salah!');
-    }
-  };
-
   const handleGoogleLogin = async () => {
     try {
       const result = await signInWithPopup(firebaseAuth, googleProvider);
@@ -759,68 +743,18 @@ const App: React.FC = () => {
                 <i className="fas fa-lock text-white text-3xl"></i>
               </div>
               <h2 className="text-2xl font-black text-slate-800 tracking-tight">Login Administrator</h2>
-              <p className="text-slate-500 font-medium mt-2">Masukkan kredensial untuk akses penuh</p>
+              <p className="text-slate-500 font-medium mt-2">Gunakan Akun Google Anda untuk akses penuh</p>
             </div>
 
-            <div className="space-y-5">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Username</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
-                    <i className="fas fa-user"></i>
-                  </div>
-                  <input 
-                    type="text" 
-                    placeholder="Username"
-                    value={loginForm.user}
-                    onChange={(e) => setLoginForm({...loginForm, user: e.target.value})}
-                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:outline-none transition-all font-semibold text-slate-700"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Password</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
-                    <i className="fas fa-key"></i>
-                  </div>
-                  <input 
-                    type="password" 
-                    placeholder="••••••••"
-                    value={loginForm.pass}
-                    onChange={(e) => setLoginForm({...loginForm, pass: e.target.value})}
-                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:outline-none transition-all font-semibold text-slate-700"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-3">
+            <div className="mt-8 flex flex-col gap-4">
               <button 
                 onClick={handleGoogleLogin}
-                className="w-full py-4 bg-white border-2 border-slate-200 hover:border-brand-500 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3 group"
+                className="w-full py-4 bg-white border-2 border-slate-200 hover:border-brand-500 text-slate-700 rounded-2xl font-bold transition-all flex items-center justify-center space-x-3 group shadow-sm hover:shadow-md"
               >
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                <span>Masuk dengan Google</span>
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+                <span className="text-lg">Masuk dengan Google</span>
               </button>
 
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-200"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-slate-400 font-bold">Atau Login Lokal</span>
-                </div>
-              </div>
-
-              <button 
-                onClick={handleLogin}
-                className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center space-x-2"
-              >
-                <span>Masuk Lokal</span>
-                <i className="fas fa-arrow-right text-sm"></i>
-              </button>
               <button 
                 onClick={() => setShowLoginModal(false)}
                 className="w-full py-4 text-slate-500 hover:text-slate-800 font-bold transition-all"
