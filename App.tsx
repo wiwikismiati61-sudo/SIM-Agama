@@ -87,7 +87,15 @@ const App: React.FC = () => {
   // Firebase Auth Sync
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
-      if (user && user.email) {
+      if (user) {
+        if (!user.email) {
+          alert('Akun Google Anda tidak memiliki alamat email yang valid. Silakan gunakan akun Google lain.');
+          await signOut(firebaseAuth);
+          setCurrentUser(null);
+          setIsLoggedIn(false);
+          return;
+        }
+
         if (!SUPER_ADMIN_EMAILS.includes(user.email)) {
           try {
             const docRef = doc(db, 'allowedUsers', user.email);
@@ -577,7 +585,13 @@ const App: React.FC = () => {
       const result = await signInWithPopup(firebaseAuth, googleProvider);
       const user = result.user;
       
-      if (user && user.email) {
+      if (user) {
+        if (!user.email) {
+          alert('Akun Google Anda tidak memiliki alamat email yang valid. Silakan gunakan akun Google lain.');
+          await signOut(firebaseAuth);
+          return;
+        }
+
         if (!SUPER_ADMIN_EMAILS.includes(user.email)) {
           const docRef = doc(db, 'allowedUsers', user.email);
           const docSnap = await getDoc(docRef);
