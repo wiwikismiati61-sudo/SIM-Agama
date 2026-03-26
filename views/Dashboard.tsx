@@ -23,8 +23,14 @@ const DashboardView: React.FC<DashboardProps> = ({ students, transactions }) => 
     return `${year}-${month}-${day}`;
   })();
   const totalStudents = students.length;
-  const absentsToday = transactions.filter(t => t.date === today).length;
-  const totalAbsences = transactions.length;
+  
+  // Hitung ketidakhadiran unik per siswa per hari
+  const uniqueAbsencesToday = new Set(transactions.filter(t => t.date === today).map(t => t.studentId));
+  const absentsToday = uniqueAbsencesToday.size;
+  
+  const uniqueAbsences = new Set(transactions.map(t => `${t.studentId}-${t.date}`));
+  const totalAbsences = uniqueAbsences.size;
+  
   const earlyDepartures = transactions.filter(t => t.reason === 'Pulang sebelum waktunya').length;
 
   // Logic: Panggilan Orang Tua (> 2 kali pelanggaran)
