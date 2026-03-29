@@ -102,7 +102,8 @@ const App: React.FC = () => {
             const docSnap = await getDoc(docRef);
             
             if (!docSnap.exists()) {
-              alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+              const displayEmail = user.email.replace('@sim-agama.local', '');
+              alert(`Akun ${displayEmail} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
               await signOut(firebaseAuth);
               setCurrentUser(null);
               setIsLoggedIn(false);
@@ -110,7 +111,8 @@ const App: React.FC = () => {
             }
           } catch (error) {
             console.error("Error checking allowed user:", error);
-            alert(`Gagal memverifikasi akses untuk ${user.email}.`);
+            const displayEmail = user.email.replace('@sim-agama.local', '');
+            alert(`Gagal memverifikasi akses untuk ${displayEmail}.`);
             await signOut(firebaseAuth);
             setCurrentUser(null);
             setIsLoggedIn(false);
@@ -567,11 +569,12 @@ const App: React.FC = () => {
 
   const handleLogin = async () => {
     if (!loginForm.user || !loginForm.pass) {
-      alert('Silakan masukkan email dan password.');
+      alert('Silakan masukkan nama user dan password.');
       return;
     }
 
-    const email = loginForm.user.toLowerCase().trim();
+    const rawUser = loginForm.user.toLowerCase().trim();
+    const email = rawUser.includes('@') ? rawUser : `${rawUser}@sim-agama.local`;
 
     try {
       // Try to sign in first
@@ -589,7 +592,7 @@ const App: React.FC = () => {
           const docRef = doc(db, 'allowedUsers', user.email);
           const docSnap = await getDoc(docRef);
           if (!docSnap.exists()) {
-            alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+            alert(`Akun ${loginForm.user} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
             await signOut(firebaseAuth);
             return;
           }
@@ -646,7 +649,7 @@ const App: React.FC = () => {
           const docRef = doc(db, 'allowedUsers', user.email);
           const docSnap = await getDoc(docRef);
           if (!docSnap.exists()) {
-            alert(`Email ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
+            alert(`Akun Google ${user.email} tidak terdaftar untuk akses Cloud. Silakan hubungi admin.`);
             await signOut(firebaseAuth);
             return;
           }
@@ -814,14 +817,14 @@ const App: React.FC = () => {
 
             <div className="space-y-5">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Email</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">Nama user</label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-500 transition-colors">
-                    <i className="fas fa-envelope"></i>
+                    <i className="fas fa-user"></i>
                   </div>
                   <input 
-                    type="email" 
-                    placeholder="Email"
+                    type="text" 
+                    placeholder="Nama user"
                     value={loginForm.user}
                     onChange={(e) => setLoginForm({...loginForm, user: e.target.value})}
                     className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 focus:outline-none transition-all font-semibold text-slate-700"
@@ -851,7 +854,7 @@ const App: React.FC = () => {
                 onClick={handleLogin}
                 className="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-brand-500/30 active:scale-[0.98] flex items-center justify-center space-x-2"
               >
-                <span>Masuk (Gunakan Email & Password di atas)</span>
+                <span>Masuk (Gunakan Nama user & Password di atas)</span>
                 <i className="fas fa-arrow-right text-sm"></i>
               </button>
 

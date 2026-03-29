@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { AllowedUser, ViewType, SUPER_ADMIN_EMAILS } from '../types';
-import { db } from '../firebase';
+import { db, secondaryAuth } from '../firebase';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { OperationType } from '../firebase';
 
 interface UsersProps {
@@ -68,8 +69,24 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
 
     setIsSubmitting(true);
     try {
+      const formattedEmail = email.includes('@') ? email.trim().toLowerCase() : `${email.trim().toLowerCase()}@sim-agama.local`;
+
+      // Create user in Firebase Auth using secondary app to avoid logging out the admin
+      try {
+        await createUserWithEmailAndPassword(secondaryAuth, formattedEmail, name);
+        await signOut(secondaryAuth);
+      } catch (authError: any) {
+        if (authError.code === 'auth/email-already-in-use') {
+          // If already exists, we just proceed to update their allowedViews
+        } else {
+          showMessage('error', 'Gagal membuat user di Firebase Auth: ' + authError.message);
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const newUser: AllowedUser = {
-        email: email.trim(),
+        email: formattedEmail,
         name: name.trim(),
         addedAt: new Date().toISOString(),
         allowedViews: allowedViews
@@ -98,7 +115,8 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
       return;
     }
 
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus akses untuk ${userEmail}?`)) {
+    const displayEmail = userEmail.replace('@sim-agama.local', '');
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus akses untuk ${displayEmail}?`)) {
       return;
     }
 
@@ -164,23 +182,23 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
         <form onSubmit={handleAddUser} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Password</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Masukkan nama lengkap"
+                placeholder="Masukkan password"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-all"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Email Google</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Nama user</label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@gmail.com"
+                placeholder="Masukkan nama user"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-all"
                 required
               />
@@ -238,8 +256,8 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50/80 border-y border-slate-200 text-slate-600 text-sm">
-                <th className="p-4 font-bold rounded-tl-xl">Nama</th>
-                <th className="p-4 font-bold">Email</th>
+                <th className="p-4 font-bold rounded-tl-xl">Password</th>
+                <th className="p-4 font-bold">Nama user</th>
                 <th className="p-4 font-bold">Hak Akses Menu</th>
                 <th className="p-4 font-bold">Tanggal Ditambahkan</th>
                 <th className="p-4 font-bold text-center rounded-tr-xl w-24">Aksi</th>
@@ -256,7 +274,7 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
                 allowedUsers.map((user) => (
                   <tr key={user.email} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="p-4 font-medium text-slate-800 align-top">{user.name}</td>
-                    <td className="p-4 text-slate-600 align-top">{user.email}</td>
+                    <td className="p-4 text-slate-600 align-top">{user.email.replace('@sim-agama.local', '')}</td>
                     <td className="p-4 align-top">
                       <div className="flex flex-wrap gap-2">
                         {AVAILABLE_VIEWS.map(view => (

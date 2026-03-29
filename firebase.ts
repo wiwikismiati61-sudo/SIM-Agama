@@ -7,6 +7,11 @@ import firebaseConfig from './firebase-applet-config.json';
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth();
+
+// Secondary app for creating users without logging out the admin
+export const secondaryApp = initializeApp(firebaseConfig, 'Secondary');
+export const secondaryAuth = getAuth(secondaryApp);
+
 export const googleProvider = new GoogleAuthProvider();
 export { signInWithEmailAndPassword, createUserWithEmailAndPassword };
 
