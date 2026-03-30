@@ -27,6 +27,8 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
+  const [deleteConfirmEmail, setDeleteConfirmEmail] = useState<string | null>(null);
+
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({type, text});
     setTimeout(() => setMessage(null), 3000);
@@ -104,7 +106,7 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
     }
   };
 
-  const handleRemoveUser = async (userEmail: string) => {
+  const initiateRemoveUser = (userEmail: string) => {
     if (!isFirebaseLoggedIn) {
       showMessage('error', 'Anda harus login untuk menghapus user.');
       return;
@@ -115,17 +117,24 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
       return;
     }
 
-    const displayEmail = userEmail.replace('@sim-agama.local', '');
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus akses untuk ${displayEmail}?`)) {
-      return;
-    }
+    setDeleteConfirmEmail(userEmail);
+  };
 
+  const confirmRemoveUser = async () => {
+    if (!deleteConfirmEmail) return;
+    
     try {
-      await deleteDoc(doc(db, 'allowedUsers', userEmail));
+      await deleteDoc(doc(db, 'allowedUsers', deleteConfirmEmail));
       showMessage('success', 'User berhasil dihapus.');
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, 'allowedUsers');
+    } finally {
+      setDeleteConfirmEmail(null);
     }
+  };
+
+  const cancelRemoveUser = () => {
+    setDeleteConfirmEmail(null);
   };
 
   const handleUpdateUserViews = async (user: AllowedUser, viewId: ViewType) => {
@@ -300,7 +309,7 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
                     </td>
                     <td className="p-4 text-center align-top">
                       <button
-                        onClick={() => handleRemoveUser(user.email)}
+                        onClick={() => initiateRemoveUser(user.email)}
                         disabled={SUPER_ADMIN_EMAILS.includes(user.email)}
                         className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title={SUPER_ADMIN_EMAILS.includes(user.email) ? "Super Admin tidak dapat dihapus" : "Hapus User"}
@@ -315,6 +324,37 @@ const UsersView: React.FC<UsersProps> = ({ allowedUsers, isFirebaseLoggedIn }) =
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmEmail && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6">
+              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-4">
+                <i className="fas fa-exclamation-triangle text-xl"></i>
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Hapus User</h3>
+              <p className="text-slate-600 mb-6">
+                Apakah Anda yakin ingin menghapus akses untuk <strong className="font-bold text-slate-800">{deleteConfirmEmail.replace('@sim-agama.local', '')}</strong>? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={cancelRemoveUser}
+                  className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmRemoveUser}
+                  className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition-colors shadow-md shadow-rose-500/30"
+                >
+                  Ya, Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

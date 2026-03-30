@@ -47,6 +47,7 @@ const TransactionView: React.FC<TransactionProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<Transaction | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteDuplicatesConfirm, setDeleteDuplicatesConfirm] = useState<string[] | null>(null);
   const [showDoubleOnly, setShowDoubleOnly] = useState(false);
 
   // Column filters
@@ -283,7 +284,7 @@ const TransactionView: React.FC<TransactionProps> = ({
             </label>
             {showDoubleOnly && duplicateKeys.size > 0 && onDeleteMultipleTransactions && (
               <button
-                onClick={async () => {
+                onClick={() => {
                   const toDelete: string[] = [];
                   const keysSeen = new Set<string>();
                   transactions.forEach(t => {
@@ -296,15 +297,8 @@ const TransactionView: React.FC<TransactionProps> = ({
                       }
                     }
                   });
-                  if (confirm(`Delete ${toDelete.length} duplicate entries?`)) {
-                    try {
-                      await onDeleteMultipleTransactions(toDelete);
-                      setMessage({type: 'success', text: 'Data duplikat berhasil dihapus!'});
-                      setTimeout(() => setMessage(null), 3000);
-                    } catch (error: any) {
-                      setMessage({type: 'error', text: 'Gagal menghapus data: ' + (error.message || 'Error tidak diketahui')});
-                      setTimeout(() => setMessage(null), 5000);
-                    }
+                  if (toDelete.length > 0) {
+                    setDeleteDuplicatesConfirm(toDelete);
                   }
                 }}
                 className="px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-lg hover:bg-red-100 transition-colors"
@@ -558,6 +552,43 @@ const TransactionView: React.FC<TransactionProps> = ({
                     await onDeleteTransaction(deleteConfirmId);
                     setDeleteConfirmId(null);
                     setMessage({type: 'success', text: 'Data berhasil dihapus!'});
+                    setTimeout(() => setMessage(null), 3000);
+                  } catch (error: any) {
+                    setMessage({type: 'error', text: 'Gagal menghapus data: ' + (error.message || 'Error tidak diketahui')});
+                    setTimeout(() => setMessage(null), 5000);
+                  }
+                }}
+                className="flex-1 px-4 py-2 bg-rose-600 text-white font-semibold rounded-xl hover:bg-rose-700 transition-colors shadow-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Duplicates Confirmation Modal */}
+      {deleteDuplicatesConfirm && onDeleteMultipleTransactions && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+            <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trash2 size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm Delete Duplicates</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete {deleteDuplicatesConfirm.length} duplicate entries? This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setDeleteDuplicatesConfirm(null)}
+                className="flex-1 px-4 py-2 border border-black/10 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={async () => {
+                  try {
+                    await onDeleteMultipleTransactions(deleteDuplicatesConfirm);
+                    setDeleteDuplicatesConfirm(null);
+                    setMessage({type: 'success', text: 'Data duplikat berhasil dihapus!'});
                     setTimeout(() => setMessage(null), 3000);
                   } catch (error: any) {
                     setMessage({type: 'error', text: 'Gagal menghapus data: ' + (error.message || 'Error tidak diketahui')});
